@@ -1,0 +1,19 @@
+{
+  "name": "plantea-app",
+  "version": "1.0.0",
+  "description": "Plantea - Pakistan's Smart Plant Marketplace",
+  "scripts": {
+    "setup": "node plantea-frontend/scripts/setup-local.js",
+    "backend": "cd plantea-backend && npm run dev",
+    "frontend": "cd plantea-frontend && npx expo start --host lan",
+    "dev": "npm run setup && npx concurrently \"npm run backend\" \"npm run frontend\" --names \"BACKEND,FRONTEND\" --prefix-colors \"green,cyan\"",
+    "install:all": "cd plantea-backend && npm install && cd ../plantea-frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.14.0",
+    "leaflet.fullscreen": "^5.3.1"
+  }
+}

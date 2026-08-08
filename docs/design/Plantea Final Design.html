@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Plantea — Final Figma Kit</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────── */
+:root{
+  --p900:#0B2E1A; --p800:#1A4731; --p700:#276044;
+  --p500:#3A8C62; --p400:#52A87D; --p300:#8ECBA8;
+  --p100:#D6F0E2; --p50:#EDF8F3;
+  --org:#F07D3A; --red:#E5493A; --yel:#F5B731;
+  --w:#fff; --bg:#F5F7F5;
+  --t1:#111B15; --t2:#3D5448; --t3:#7A9487; --t4:#B5CAC0;
+  --card-r:20px; --btn-r:14px;
+  --sh:0 2px 16px rgba(10,40,20,.10);
+  --sh2:0 8px 32px rgba(10,40,20,.15);
+}
+
+/* ─── PAGE ───────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:#1C2B22;font-family:'Nunito',sans-serif;}
+body{padding:40px 24px 80px;}
+
+/* ─── TITLE ──────────────────────────────── */
+.pg-title{
+  font-family:'Sora',sans-serif;font-size:28px;font-weight:800;
+  color:#fff;text-align:center;margin-bottom:6px;
+}
+.pg-sub{color:var(--p300);font-size:14px;text-align:center;margin-bottom:0px;}
+
+/* ─── FLOW MAP ───────────────────────────── */
+.flow-map{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:24px 28px;margin:28px 0 40px;
+}
+.flow-map h3{color:var(--p300);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;font-weight:700;}
+.flow-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.flow-row:last-child{margin-bottom:0;}
+.fn{background:rgba(255,255,255,.08);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:50px;white-space:nowrap;}
+.fn.start{background:var(--p700);color:#fff;}
+.fn.buyer{background:#1C3D2E;color:var(--p300);border:1px solid var(--p700);}
+.fn.seller{background:#2B2010;color:#F5B731;border:1px solid #8B6520;}
+.fn.rider{background:#1D1820;color:#C8A0FF;border:1px solid #7040B0;}
+.arr{color:var(--p400);font-size:16px;font-weight:700;}
+.flow-label{color:var(--t3);font-size:11px;margin-left:4px;font-style:italic;}
+
+/* ─── SECTION DIVIDER ────────────────────── */
+.sec{
+  font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--p300);border-left:3px solid var(--p500);
+  padding-left:12px;margin:40px 0 20px;
+}
+
+/* ─── SCREEN GRID ────────────────────────── */
+.grid{display:flex;flex-wrap:wrap;gap:32px;}
+
+/* ─── SCREEN WRAPPER ─────────────────────── */
+.sw{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.sw-label{
+  font-size:11px;font-weight:700;color:var(--p300);
+  background:rgba(255,255,255,.06);padding:4px 14px;
+  border-radius:50px;letter-spacing:.5px;
+}
+.sw-arrow{
+  font-size:11px;color:var(--t3);
+  background:rgba(255,255,255,.04);padding:3px 12px;
+  border-radius:50px;text-align:center;
+}
+
+/* ─── PHONE SHELL ────────────────────────── */
+.phone{
+  width:390px;height:844px;
+  border-radius:48px;overflow:hidden;position:relative;
+  background:#fff;
+  box-shadow:0 0 0 9px #232B26,0 0 0 11px #3A4A40,0 24px 80px rgba(0,0,0,.55);
+  flex-shrink:0;
+}
+
+/* ─── STATUS BAR ─────────────────────────── */
+.sb{
+  height:52px;display:flex;align-items:flex-end;padding:0 28px 10px;
+  justify-content:space-between;font-size:13px;font-weight:700;
+  position:absolute;top:0;left:0;right:0;z-index:99;
+}
+.sb-ic{display:flex;align-items:center;gap:4px;font-size:12px;}
+
+/* ─── BOTTOM NAV ─────────────────────────── */
+.bnav{
+  position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:#fff;border-top:1px solid #EAEFEB;
+  display:flex;padding:10px 0 0;
+}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--t4);}
+.bn.on{color:var(--p700);}
+.bn-ic{font-size:24px;}
+
+/* ─── SHARED UTIL ────────────────────────── */
+.pg{width:100%;height:100%;display:flex;flex-direction:column;}
+.frow{display:flex;align-items:center;}
+.gap4{gap:4px;} .gap8{gap:8px;} .gap12{gap:12px;} .gap16{gap:16px;}
+.fw7{font-weight:700;} .fw8{font-weight:800;}
+.fs11{font-size:11px;} .fs12{font-size:12px;} .fs13{font-size:13px;}
+.fs14{font-size:14px;} .fs15{font-size:15px;} .fs16{font-size:16px;}
+.fs18{font-size:18px;} .fs22{font-size:22px;} .fs24{font-size:24px;}
+.fc{flex-direction:column;}
+.mt4{margin-top:4px;} .mt8{margin-top:8px;} .mt12{margin-top:12px;}
+.mt16{margin-top:16px;} .mt20{margin-top:20px;}
+.w100{width:100%;}
+.c1{color:var(--t1);} .c2{color:var(--t2);} .c3{color:var(--t3);}
+.cp{color:var(--p700);}
+.cw{color:#fff;}
+.sb-dark .sb,.sb-dark{color:var(--t1);}
+.sb-light .sb,.sb-light{color:#fff;}
+.sora{font-family:'Sora',sans-serif;}
+
+/* ─── BUTTONS ────────────────────────────── */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:16px;border-radius:var(--btn-r);
+  font-family:'Sora',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;width:100%;
+}
+.btn-p{background:var(--p700);color:#fff;}
+.btn-o{background:transparent;border:2px solid var(--p300);color:var(--p700);}
+.btn-org{background:var(--org);color:#fff;}
+
+/* ─── INPUT ──────────────────────────────── */
+.inp{
+  background:var(--bg);border:2px solid transparent;
+  border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;color:var(--t1);
+}
+.inp.on{border-color:var(--p400);background:var(--p50);}
+.inp-ic{font-size:18px;}
+.inp-ph{color:var(--t4);font-size:14px;}
+.inp-v{color:var(--t1);font-size:14px;}
+
+/* ─── CHIPS ──────────────────────────────── */
+.chip{padding:8px 16px;border-radius:50px;font-size:13px;font-weight:700;white-space:nowrap;}
+.chip-on{background:var(--p700);color:#fff;}
+.chip-off{background:#fff;color:var(--t2);border:1.5px solid var(--p100);}
+
+/* ─── CARD ───────────────────────────────── */
+.card{background:#fff;border-radius:var(--card-r);box-shadow:var(--sh);}
+
+/* ─────────────────────────────────────────────
+   SCREEN BODIES
+───────────────────────────────────────────── */
+
+/* S1 SPLASH */
+.splash{
+  width:100%;height:100%;
+  background:linear-gradient(160deg,var(--p800) 0%,var(--p900) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.splash::before{
+  content:'';position:absolute;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(58,140,98,.18) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-55%);
+}
+.splash-logo{
+  width:96px;height:96px;background:var(--p500);border-radius:28px;
+  display:flex;align-items:center;justify-content:center;font-size:48px;
+  box-shadow:0 16px 48px rgba(58,140,98,.4);margin-bottom:20px;
+}
+.splash-name{font-family:'Sora',sans-serif;font-size:44px;font-weight:800;color:#fff;letter-spacing:-1px;}
+.splash-tag{color:var(--p300);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;font-weight:600;}
+.splash-loader{
+  position:absolute;bottom:80px;
+  width:180px;height:3px;background:rgba(255,255,255,.12);border-radius:50px;overflow:hidden;
+}
+.splash-loader-fill{width:60%;height:100%;background:var(--p400);border-radius:50px;}
+
+/* S2 ROLE SELECT */
+.role-pg{
+  width:100%;height:100%;background:#fff;
+  padding:64px 24px 32px;display:flex;flex-direction:column;
+}
+.role-hd h2{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--t1);line-height:1.25;}
+.role-hd p{font-size:14px;color:var(--t3);margin-top:6px;}
+.role-cards{flex:1;display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+.role-card{
+  background:#fff;border-radius:var(--card-r);
+  padding:18px;display:flex;align-items:center;gap:14px;
+  border:2px solid var(--p100);box-shadow:var(--sh);cursor:pointer;
+}
+.role-card.sel{border-color:var(--p500);background:var(--p50);}
+.role-ic{
+  width:54px;height:54px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;
+}
+.role-ic.b{background:#EAF4FF;}
+.role-ic.s{background:var(--p100);}
+.role-ic.r{background:#FFF0E6;}
+.role-txt h3{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--t1);}
+.role-txt p{font-size:12px;color:var(--t3);margin-top:2px;}
+.chk{margin-left:auto;width:22px;height:22px;border-radius:50%;background:var(--p500);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.arr-r{margin-left:auto;color:var(--t4);font-size:20px;}
+
+/* S3 LOGIN */
+.login-pg{width:100%;height:100%;background:#fff;padding:60px 24px 36px;display:flex;flex-direction:column;}
+.login-logo{width:48px;height:48px;background:var(--p500);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;}
+.login-hd h2{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--t1);}
+.login-hd p{font-size:13px;color:var(--t3);margin-top:4px;}
+.tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin:20px 0 18px;}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;font-size:14px;font-weight:700;color:var(--t3);}
+.tab.on{background:#fff;color:var(--p700);box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.inp-lbl{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:6px;display:block;}
+.inp-grp{margin-bottom:14px;}
+.forgot{color:var(--p700);font-size:12px;font-weight:700;text-align:right;margin-bottom:20px;}
+.or-div{display:flex;align-items:center;gap:10px;color:var(--t4);font-size:12px;margin:16px 0;}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--p100);}
+.google-btn{
+  width:100%;padding:14px;border:2px solid #E5EBE8;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:14px;font-weight:700;color:var(--t1);margin-bottom:0;
+}
+.signup-note{color:var(--t3);font-size:13px;text-align:center;margin-top:16px;}
+.signup-note b{color:var(--p700);}
+
+/* S4 BUYER HOME */
+.home-pg{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;}
+.home-hdr{
+  background:var(--p800);padding:52px 20px 22px;
+  border-radius:0 0 28px 28px;
+}
+.home-gr{color:var(--p300);font-size:12px;font-weight:600;}
+.home-nm{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.srch{background:#fff;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-top:14px;}
+.srch-ic{font-size:18px;color:var(--t4);}
+.srch-ph{font-size:14px;color:var(--t4);}
+.home-body{flex:1;padding:18px 18px 0;overflow:hidden;}
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-t{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--t1);}
+.see{font-size:12px;font-weight:700;color:var(--p500);}
+.cats{display:flex;gap:8px;margin-bottom:18px;overflow:hidden;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pc{background:#fff;border-radius:var(--card-r);overflow:hidden;box-shadow:var(--sh);}
+.pc-img{height:108px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;}
+.bg-a{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);}
+.bg-b{background:linear-gradient(135deg,#F3F0FF,#DDD6FE);}
+.bg-c{background:linear-gradient(135deg,#E0F2FE,#BAE6FD);}
+.bg-d{background:linear-gradient(135deg,#FFF7ED,#FED7AA);}
+.ai-badge{
+  position:absolute;top:8px;right:8px;
+  background:var(--p600,var(--p500));color:#fff;
+  font-size:9px;font-weight:800;padding:3px 7px;border-radius:50px;
+  letter-spacing:.3px;
+}
+.pc-info{padding:10px 12px 12px;}
+.pc-name{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--t1);}
+.pc-seller{font-size:11px;color:var(--t3);margin-top:1px;}
+.pc-bot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.pc-price{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:var(--p700);}
+.add-ic{
+  width:28px;height:28px;background:var(--p700);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800;
+}
+.scan-fab{
+  position:absolute;bottom:96px;right:20px;
+  width:52px;height:52px;background:var(--org);border-radius:16px;
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  box-shadow:0 6px 20px rgba(240,125,58,.4);
+}
+
+/* S5 PLANT DETAIL */
+.detail-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;}
+.d-img{
+  height:300px;background:linear-gradient(160deg,#D6F0E2,#A8DDB5);
+  display:flex;align-items:center;justify-content:center;font-size:110px;position:relative;
+}
+.d-back,.d-heart{
+  position:absolute;top:60px;
+  width:40px;height:40px;background:rgba(255,255,255,.88);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.d-back{left:20px;}
+.d-heart{right:20px;}
+.d-ai{
+  position:absolute;bottom:14px;left:14px;
+  background:var(--p700);color:#fff;font-size:11px;font-weight:700;
+  padding:6px 12px;border-radius:50px;display:flex;align-items:center;gap:5px;
+}
+.d-body{flex:1;padding:18px 18px 0;overflow:hidden;}
+.d-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--t1);}
+.d-sci{font-size:13px;color:var(--t3);font-style:italic;margin-top:2px;}
+.d-price{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--p700);margin-top:6px;}
+.d-seller{
+  display:flex;align-items:center;gap:10px;
+  background:var(--p50);border-radius:14px;padding:10px 14px;margin:12px 0;
+}
+.d-av{width:32px;height:32px;background:var(--p300);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.d-care{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.d-chip{background:var(--bg);border-radius:12px;padding:10px 8px;text-align:center;}
+.d-chip .di{font-size:20px;}
+.d-chip .dl{font-size:10px;color:var(--t3);margin-top:3px;display:block;}
+.d-chip .dv{font-size:12px;font-weight:700;color:var(--t1);display:block;}
+.d-acts{display:flex;gap:10px;margin-top:12px;}
+.btn-chat{flex:1;padding:16px;border:2px solid var(--p300);border-radius:var(--btn-r);color:var(--p700);font-weight:700;font-size:14px;text-align:center;}
+.btn-cart{flex:2;padding:16px;background:var(--p700);border-radius:var(--btn-r);color:#fff;font-weight:700;font-size:14px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
+
+/* S6 AI SCANNER */
+.scanner-pg{width:100%;height:100%;background:#0A0F0B;display:flex;flex-direction:column;}
+.sc-hdr{padding:62px 20px 16px;display:flex;align-items:center;gap:14px;}
+.sc-hdr-t{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#fff;}
+.cam{flex:1;background:#111D14;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.cam-plant{font-size:130px;opacity:.75;}
+.corner{position:absolute;width:50px;height:50px;}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--p400);}
+.corner::before{width:100%;height:3px;top:0;}
+.corner::after{width:3px;height:100%;top:0;}
+.corner.tl{top:20%;left:25%;}
+.corner.tr{top:20%;right:25%;transform:scaleX(-1);}
+.corner.bl{bottom:20%;left:25%;transform:scaleY(-1);}
+.corner.br{bottom:20%;right:25%;transform:scale(-1);}
+.sc-line{position:absolute;width:42%;height:2px;background:linear-gradient(90deg,transparent,var(--p400),transparent);top:42%;}
+.sc-tip{color:rgba(255,255,255,.55);font-size:12px;text-align:center;padding:14px 40px;}
+.sc-bot{padding:14px 24px 36px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.shutter{
+  width:68px;height:68px;background:var(--p400);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  box-shadow:0 0 0 6px rgba(82,168,125,.2);
+}
+.sc-opts{display:flex;gap:28px;align-items:center;}
+.sc-opt{display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;}
+.sc-opt span{font-size:22px;}
+
+/* S7 SCAN RESULT */
+.sr-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;}
+.sr-hdr{background:var(--p700);padding:52px 20px 24px;text-align:center;}
+.sr-em{font-size:60px;}
+.sr-nm{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-top:10px;}
+.sr-sci{font-size:13px;color:var(--p300);font-style:italic;}
+.sr-conf{margin-top:14px;}
+.sr-conf .lbl{color:var(--p300);font-size:11px;margin-bottom:5px;}
+.sr-track{height:5px;background:rgba(255,255,255,.18);border-radius:50px;}
+.sr-fill{height:100%;width:94%;background:var(--p300);border-radius:50px;}
+.sr-pct{color:#fff;font-size:13px;font-weight:700;margin-top:4px;text-align:right;}
+.sr-body{flex:1;padding:16px 18px;overflow:hidden;}
+.hlth-card{
+  background:linear-gradient(135deg,var(--p700),var(--p500));
+  border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;
+}
+.hlth-circle{
+  width:58px;height:58px;background:rgba(255,255,255,.18);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+}
+.hlth-n{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;line-height:1;}
+.hlth-l{font-size:9px;color:var(--p100);}
+.hlth-txt h4{color:#fff;font-weight:700;font-size:14px;}
+.hlth-txt p{color:var(--p100);font-size:12px;margin-top:2px;}
+.sr-sec{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--t1);margin:14px 0 8px;}
+.info-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:12px;margin-bottom:7px;}
+.ir-ic{font-size:19px;width:26px;text-align:center;}
+.ir-l{font-size:11px;color:var(--t3);}
+.ir-v{font-size:13px;font-weight:600;color:var(--t1);}
+
+/* S8 ORDER CONFIRM */
+.oc-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;}
+.oc-hdr{
+  padding:60px 20px 16px;border-bottom:1px solid var(--p100);
+  display:flex;align-items:center;gap:12px;
+}
+.oc-hdr h2{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--t1);}
+.oc-body{flex:1;padding:18px;overflow:hidden;}
+.sum-card{background:var(--p50);border-radius:16px;padding:16px;margin-bottom:14px;}
+.sum-t{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px;}
+.sum-plant{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--p100);margin-bottom:12px;}
+.sum-pi{width:52px;height:52px;background:var(--p100);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:7px;}
+.sum-row.tot{font-weight:800;color:var(--t1);font-size:15px;}
+.oc-sec{background:#fff;border:2px solid var(--p100);border-radius:14px;padding:14px;margin-bottom:12px;}
+.oc-sec-t{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;justify-content:space-between;}
+.change{color:var(--p700);font-size:12px;font-weight:700;}
+.oc-addr{font-size:13px;color:var(--t2);line-height:1.55;}
+.pay-opt{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--p400);display:flex;align-items:center;justify-content:center;}
+.radio.on::after{content:'';width:10px;height:10px;background:var(--p500);border-radius:50%;}
+.oc-foot{padding:14px 18px 28px;border-top:1px solid var(--p100);}
+
+/* S9 SUCCESS */
+.suc-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;}
+.suc-ring{
+  width:116px;height:116px;
+  background:linear-gradient(135deg,var(--p700),var(--p400));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:54px;
+  box-shadow:0 16px 48px rgba(39,96,68,.3);margin-bottom:24px;
+}
+.suc-t{font-family:'Sora',sans-serif;font-size:27px;font-weight:800;color:var(--t1);}
+.suc-p{font-size:14px;color:var(--t3);line-height:1.65;margin-top:8px;}
+.oid{
+  background:var(--p50);border-radius:12px;padding:12px 20px;
+  margin:20px 0;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--p700);letter-spacing:1px;
+}
+.eta-lbl{font-size:13px;color:var(--t3);margin-bottom:4px;}
+.eta-v{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--p700);}
+.suc-acts{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+
+/* S10 TRACKING */
+.trk-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;}
+.map{height:330px;background:linear-gradient(160deg,#E2F0E8,#C5DFCC);position:relative;overflow:hidden;}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:28px 28px;}
+.map-road{position:absolute;width:200px;height:4px;background:var(--p400);border-radius:50px;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);}
+.map-rider{position:absolute;top:42%;left:28%;font-size:28px;}
+.map-dest{position:absolute;top:55%;right:26%;font-size:26px;}
+.map-back{position:absolute;top:62px;left:20px;width:40px;height:40px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:var(--sh);}
+.trk-body{flex:1;padding:16px 18px 0;overflow:hidden;}
+.trk-status{
+  background:var(--p50);border-radius:16px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.trk-ic{width:46px;height:46px;background:var(--p700);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.trk-steps{display:flex;flex-direction:column;gap:0;}
+.step{display:flex;align-items:flex-start;gap:12px;position:relative;padding-bottom:18px;}
+.step:last-child{padding-bottom:0;}
+.step::after{content:'';position:absolute;left:11px;top:24px;width:1px;height:calc(100% - 6px);background:var(--p300);}
+.step:last-child::after{display:none;}
+.step-d{width:24px;height:24px;border-radius:50%;background:var(--p500);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;z-index:1;}
+.step-d.pnd{background:var(--bg);color:var(--t4);border:2px solid var(--p100);}
+.step-d.now{background:var(--org);}
+.step-t{font-size:13px;font-weight:700;color:var(--t1);}
+.step-tm{font-size:11px;color:var(--t3);}
+.rider-row{
+  background:#fff;border:2px solid var(--p100);border-radius:14px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;margin-top:10px;
+}
+.rider-av{width:42px;height:42px;background:var(--org);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
+
+/* S11 SELLER DASHBOARD */
+.sel-pg{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;}
+.sel-hdr{background:var(--p800);padding:52px 20px 22px;}
+.sel-g{color:var(--p300);font-size:12px;font-weight:600;}
+.sel-nm{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+.stat{background:rgba(255,255,255,.10);border-radius:14px;padding:12px;text-align:center;}
+.stat-n{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;}
+.stat-l{font-size:10px;color:var(--p300);margin-top:2px;}
+.sel-body{flex:1;padding:16px 18px 0;overflow:hidden;}
+.add-btn-full{
+  background:var(--org);border-radius:16px;padding:14px 16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  color:#fff;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;margin-bottom:14px;
+}
+.ord-item{
+  background:#fff;border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;margin-bottom:10px;box-shadow:var(--sh);
+}
+.ord-ic{width:46px;height:46px;background:var(--p100);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.ord-nm{font-size:13px;font-weight:700;color:var(--t1);}
+.ord-by{font-size:11px;color:var(--t3);}
+.badge{padding:4px 10px;border-radius:50px;font-size:10px;font-weight:800;margin-left:auto;white-space:nowrap;}
+.bdg-pend{background:#FEF3C7;color:#92400E;}
+.bdg-del{background:var(--p100);color:var(--p800);}
+.bdg-tr{background:#DBEAFE;color:#1E40AF;}
+
+/* S12 ADD LISTING */
+.al-pg{width:100%;height:100%;background:#fff;display:flex;flex-direction:column;}
+.al-hdr{padding:62px 20px 14px;border-bottom:1px solid var(--p100);display:flex;align-items:center;gap:12px;}
+.al-hdr h2{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--t1);}
+.al-body{flex:1;padding:16px 18px;overflow:hidden;}
+.photo-up{
+  width:100%;height:130px;border:2px dashed var(--p300);border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  background:var(--p50);margin-bottom:16px;position:relative;
+}
+.photo-up .big{font-size:36px;}
+.photo-up p{font-size:13px;color:var(--t2);font-weight:600;}
+.scan-cta{
+  position:absolute;bottom:-1px;right:-1px;
+  background:var(--p700);color:#fff;font-size:11px;font-weight:700;
+  padding:7px 14px;border-radius:0 14px 0 14px;
+  display:flex;align-items:center;gap:5px;
+}
+.fg{margin-bottom:12px;}
+.fl{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px;display:block;}
+.fi{
+  width:100%;padding:13px 14px;background:var(--bg);border-radius:12px;
+  font-size:14px;color:var(--t1);border:2px solid transparent;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.fi.on{border-color:var(--p400);background:var(--p50);}
+.price-row{display:flex;gap:12px;}
+.price-row .fg{flex:1;}
+.ai-ver{background:var(--p50);border-radius:12px;padding:12px;margin-bottom:12px;}
+
+/* S13 SELLER EARNINGS / RIDER EARNINGS shared */
+.earn-pg{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;}
+.earn-hdr{background:var(--p800);padding:52px 20px 22px;}
+.earn-hdr h2{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:#fff;}
+.earn-tot{background:rgba(255,255,255,.10);border-radius:16px;padding:18px;margin-top:14px;text-align:center;}
+.earn-big{font-family:'Sora',sans-serif;font-size:38px;font-weight:800;color:#fff;}
+.earn-period{color:var(--p300);font-size:12px;margin-top:3px;}
+.earn-row{display:flex;gap:10px;margin-top:10px;}
+.earn-item{flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center;}
+.earn-item .v{color:#fff;font-weight:700;font-size:14px;}
+.earn-item .l{color:var(--p300);font-size:10px;margin-top:2px;}
+.earn-body{flex:1;padding:14px 18px 0;overflow:hidden;}
+.ptabs{display:flex;background:#fff;border-radius:12px;padding:4px;margin-bottom:14px;box-shadow:var(--sh);}
+.ptab{flex:1;padding:8px;text-align:center;border-radius:10px;font-size:13px;font-weight:700;color:var(--t3);}
+.ptab.on{background:var(--p700);color:#fff;}
+.chart{
+  background:#fff;border-radius:14px;padding:14px;height:110px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:7px;
+  box-shadow:var(--sh);margin-bottom:14px;
+}
+.bar{flex:1;background:var(--p100);border-radius:6px 6px 0 0;}
+.bar.h{height:85%;}
+.bar.m{height:60%;}
+.bar.s{height:35%;}
+.bar.on{background:var(--p400);}
+.h-item{
+  background:#fff;border-radius:12px;padding:11px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.05);
+}
+.h-left{display:flex;align-items:center;gap:10px;}
+.h-ic{width:34px;height:34px;background:var(--p100);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.h-nm{font-size:13px;font-weight:700;color:var(--t1);}
+.h-dt{font-size:11px;color:var(--t3);}
+.h-amt{font-weight:800;color:var(--p700);font-size:14px;}
+
+/* S14 RIDER DASHBOARD */
+.rd-pg{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;}
+.rd-hdr{background:linear-gradient(135deg,#C2521A,var(--org));padding:52px 20px 22px;}
+.rd-g{color:rgba(255,255,255,.75);font-size:12px;font-weight:600;}
+.rd-nm{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.rd-status{
+  background:rgba(255,255,255,.18);border-radius:50px;padding:6px 14px;
+  display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:#fff;font-size:12px;font-weight:700;
+}
+.dot-gr{width:8px;height:8px;background:#4ADE80;border-radius:50%;}
+.rd-earn{display:flex;gap:10px;margin-top:14px;}
+.rd-card{flex:1;background:rgba(255,255,255,.15);border-radius:14px;padding:12px;text-align:center;}
+.rd-card .n{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:#fff;}
+.rd-card .l{font-size:10px;color:rgba(255,255,255,.7);}
+.rd-body{flex:1;padding:14px 18px 0;overflow:hidden;}
+.del-card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);}
+.del-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.del-pay{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--p700);}
+.dist-bdg{background:var(--p100);color:var(--p700);font-size:11px;font-weight:700;padding:4px 10px;border-radius:50px;}
+.del-addr{background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.da-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2);margin-bottom:4px;}
+.da-row:last-child{margin-bottom:0;}
+.del-acts{display:flex;gap:8px;}
+.btn-acc{flex:2;background:var(--p700);color:#fff;border-radius:12px;padding:12px;font-weight:700;font-size:13px;text-align:center;}
+.btn-dec{flex:1;background:var(--bg);color:var(--t2);border-radius:12px;padding:12px;font-weight:700;font-size:13px;text-align:center;}
+
+/* S15 PROFILE */
+.prof-pg{width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;}
+.prof-hdr{background:var(--p800);padding:52px 20px 28px;display:flex;flex-direction:column;align-items:center;}
+.prof-av{width:78px;height:78px;background:var(--p500);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;border:3px solid rgba(255,255,255,.18);margin-bottom:10px;}
+.prof-nm{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;color:#fff;}
+.prof-em{color:var(--p300);font-size:13px;margin-top:3px;}
+.prof-body{flex:1;padding:16px 18px 0;overflow:hidden;}
+.prof-sec{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:var(--sh);}
+.prof-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--p50);}
+.prof-row:last-child{border-bottom:none;}
+.pr-ic{font-size:20px;width:26px;text-align:center;}
+.pr-lbl{flex:1;font-size:14px;color:var(--t1);font-weight:600;}
+.pr-arr{color:var(--t4);font-size:18px;}
+.prof-row.danger .pr-lbl{color:var(--red);}
+
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="pg-title">🌿 Plantea — Final Figma Kit</div>
+<div class="pg-sub">15 Screens · 3 Flows · All Prototype Connections Listed Below</div>
+
+<!-- PROTOTYPE MAP -->
+<div class="flow-map">
+  <h3>📐 Prototype Connection Map — Set These in Figma</h3>
+
+  <div class="flow-row">
+    <span class="fn start">S1 Splash</span>
+    <span class="arr">→</span>
+    <span class="fn start">S2 Role Select</span>
+    <span class="arr">→</span>
+    <span class="fn start">S3 Login</span>
+  </div>
+
+  <div class="flow-row">
+    <span class="fn start">S3 Login</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S4 Buyer Home</span>
+    <span class="flow-label">tap "Buyer" role</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S4 Buyer Home</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S5 Plant Detail</span>
+    <span class="flow-label">tap any plant card</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S4 Buyer Home</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S6 AI Scanner</span>
+    <span class="flow-label">tap 🔬 FAB button</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S6 AI Scanner</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S7 Scan Result</span>
+    <span class="flow-label">tap shutter</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S5 Plant Detail</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S8 Order Confirm</span>
+    <span class="flow-label">tap "Add to Cart"</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S8 Order Confirm</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S9 Success</span>
+    <span class="flow-label">tap "Place Order"</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn buyer">S9 Success</span>
+    <span class="arr">→</span>
+    <span class="fn buyer">S10 Tracking</span>
+    <span class="flow-label">tap "Track My Order"</span>
+  </div>
+
+  <div class="flow-row" style="margin-top:8px;">
+    <span class="fn start">S3 Login</span>
+    <span class="arr">→</span>
+    <span class="fn seller">S11 Seller Dashboard</span>
+    <span class="flow-label">tap "Seller" role</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn seller">S11 Seller Dashboard</span>
+    <span class="arr">→</span>
+    <span class="fn seller">S12 Add Listing</span>
+    <span class="flow-label">tap "+ Add Plant"</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn seller">S11 Seller Dashboard</span>
+    <span class="arr">→</span>
+    <span class="fn seller">S13 Seller Earnings</span>
+    <span class="flow-label">tap "💰 Earnings" nav</span>
+  </div>
+
+  <div class="flow-row" style="margin-top:8px;">
+    <span class="fn start">S3 Login</span>
+    <span class="arr">→</span>
+    <span class="fn rider">S14 Rider Dashboard</span>
+    <span class="flow-label">tap "Rider" role</span>
+  </div>
+  <div class="flow-row">
+    <span class="fn rider">S14 Rider Dashboard</span>
+    <span class="arr">→</span>
+    <span class="fn rider">S15 Rider Earnings</span>
+    <span class="flow-label">tap "💰 Earnings" nav</span>
+  </div>
+
+  <div class="flow-row" style="margin-top:8px;">
+    <span class="fn" style="background:rgba(255,255,255,.06)">Any Screen</span>
+    <span class="arr">→</span>
+    <span class="fn" style="background:rgba(255,255,255,.1)">Profile (S16)</span>
+    <span class="flow-label">tap 👤 in bottom nav</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     AUTH FLOW
+============================================================ -->
+<div class="sec">Auth Flow — 3 Screens</div>
+<div class="grid">
+
+<!-- S1 SPLASH -->
+<div class="sw">
+  <div class="sw-label">S1 · Splash Screen</div>
+  <div class="phone">
+    <div class="sb" style="color:rgba(255,255,255,.6);">
+      <span>9:41</span><div class="sb-ic">📶 🔋</div>
+    </div>
+    <div class="splash">
+      <div class="splash-logo">🌿</div>
+      <div class="splash-name">Plantea</div>
+      <div class="splash-tag">Pakistan's Plant Market</div>
+      <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+    </div>
+  </div>
+  <div class="sw-arrow">Auto → S2 Role Select</div>
+</div>
+
+<!-- S2 ROLE SELECT -->
+<div class="sw">
+  <div class="sw-label">S2 · Role Selection</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);">
+      <span>9:41</span><div class="sb-ic">📶 🔋</div>
+    </div>
+    <div class="role-pg">
+      <div style="height:52px;"></div>
+      <div class="role-hd">
+        <h2>Welcome to<br>Plantea 🌱</h2>
+        <p>Pick your role to continue</p>
+      </div>
+      <div class="role-cards">
+        <div class="role-card sel">
+          <div class="role-ic b">🛒</div>
+          <div class="role-txt"><h3>Buyer</h3><p>Browse & buy verified plants</p></div>
+          <div class="chk">✓</div>
+        </div>
+        <div class="role-card">
+          <div class="role-ic s">🌾</div>
+          <div class="role-txt"><h3>Seller</h3><p>List & sell your plants</p></div>
+          <div class="arr-r">›</div>
+        </div>
+        <div class="role-card">
+          <div class="role-ic r">🛵</div>
+          <div class="role-txt"><h3>Rider</h3><p>Deliver & earn flexibly</p></div>
+          <div class="arr-r">›</div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;">
+          <div class="btn btn-p">Continue as Buyer →</div>
+          <div class="btn btn-o" style="margin-top:0;">Already have account? Login</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">Buyer → S3 Login &nbsp;|&nbsp; Seller → S3 Login &nbsp;|&nbsp; Rider → S3 Login</div>
+</div>
+
+<!-- S3 LOGIN -->
+<div class="sw">
+  <div class="sw-label">S3 · Login / Register</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);">
+      <span>9:41</span><div class="sb-ic">📶 🔋</div>
+    </div>
+    <div class="login-pg">
+      <div style="height:52px;"></div>
+      <div class="login-logo">🌿</div>
+      <div class="login-hd"><h2>Sign In</h2><p>Welcome back to Plantea</p></div>
+      <div class="tabs"><div class="tab on">Login</div><div class="tab">Register</div></div>
+      <div class="inp-grp">
+        <label class="inp-lbl">Email</label>
+        <div class="inp on"><span class="inp-ic">✉️</span><span class="inp-v">bilal@gmail.com</span></div>
+      </div>
+      <div class="inp-grp">
+        <label class="inp-lbl">Password</label>
+        <div class="inp" style="justify-content:space-between;">
+          <div style="display:flex;gap:8px;align-items:center;"><span class="inp-ic">🔒</span><span class="inp-ph">••••••••</span></div>
+          <span style="font-size:16px;color:var(--t4);">👁</span>
+        </div>
+      </div>
+      <div class="forgot">Forgot Password?</div>
+      <div class="btn btn-p">Sign In 🌿</div>
+      <div class="or-div">or</div>
+      <div class="google-btn">🌐 Continue with Google</div>
+      <div class="signup-note" style="margin-top:14px;">New to Plantea? <b>Create Account →</b></div>
+    </div>
+  </div>
+  <div class="sw-arrow">Login Success → S4/S11/S14 based on role</div>
+</div>
+
+</div><!-- end grid -->
+
+<!-- ============================================================
+     BUYER FLOW
+============================================================ -->
+<div class="sec">Buyer Flow — 7 Screens</div>
+<div class="grid">
+
+<!-- S4 BUYER HOME -->
+<div class="sw">
+  <div class="sw-label">S4 · Buyer Home</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="home-pg">
+      <div class="home-hdr">
+        <div style="height:52px;"></div>
+        <div class="home-gr">Good Morning ☀️</div>
+        <div class="home-nm">Shehroz Malik</div>
+        <div class="srch"><span class="srch-ic">🔍</span><span class="srch-ph">Search plants, sellers…</span></div>
+      </div>
+      <div class="home-body">
+        <div class="cats">
+          <div class="chip chip-on">All</div>
+          <div class="chip chip-off">Indoor 🪴</div>
+          <div class="chip chip-off">Outdoor 🌳</div>
+          <div class="chip chip-off">Rare 🌺</div>
+        </div>
+        <div class="sec-row"><span class="sec-t">Featured Plants</span><span class="see">See all</span></div>
+        <div class="pgrid">
+          <div class="pc">
+            <div class="pc-img bg-a">🌿<div class="ai-badge">✓ AI</div></div>
+            <div class="pc-info">
+              <div class="pc-name">Peace Lily</div>
+              <div class="pc-seller">Hassan Nursery</div>
+              <div class="pc-bot"><div class="pc-price">Rs.450</div><div class="add-ic">+</div></div>
+            </div>
+          </div>
+          <div class="pc">
+            <div class="pc-img bg-b">🪴<div class="ai-badge">✓ AI</div></div>
+            <div class="pc-info">
+              <div class="pc-name">Money Plant</div>
+              <div class="pc-seller">GreenGrow</div>
+              <div class="pc-bot"><div class="pc-price">Rs.299</div><div class="add-ic">+</div></div>
+            </div>
+          </div>
+          <div class="pc">
+            <div class="pc-img bg-c">🌱<div class="ai-badge">✓ AI</div></div>
+            <div class="pc-info">
+              <div class="pc-name">Snake Plant</div>
+              <div class="pc-seller">EcoRoots</div>
+              <div class="pc-bot"><div class="pc-price">Rs.650</div><div class="add-ic">+</div></div>
+            </div>
+          </div>
+          <div class="pc">
+            <div class="pc-img bg-d">🌺<div class="ai-badge">✓ AI</div></div>
+            <div class="pc-info">
+              <div class="pc-name">Anthurium</div>
+              <div class="pc-seller">PlantHub LHR</div>
+              <div class="pc-bot"><div class="pc-price">Rs.1,200</div><div class="add-ic">+</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scan-fab">🔬</div>
+      <div class="bnav">
+        <div class="bn on"><div class="bn-ic">🏠</div>Home</div>
+        <div class="bn"><div class="bn-ic">🔍</div>Explore</div>
+        <div class="bn"><div class="bn-ic">📦</div>Orders</div>
+        <div class="bn"><div class="bn-ic">👤</div>Profile</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">Plant card → S5 Detail &nbsp;|&nbsp; 🔬 FAB → S6 Scanner &nbsp;|&nbsp; 👤 → S16 Profile</div>
+</div>
+
+<!-- S5 PLANT DETAIL -->
+<div class="sw">
+  <div class="sw-label">S5 · Plant Detail</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;z-index:200;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="detail-pg">
+      <div class="d-img">
+        🌿
+        <div class="d-back">←</div>
+        <div class="d-heart">🤍</div>
+        <div class="d-ai">🤖 98% Healthy</div>
+      </div>
+      <div class="d-body">
+        <div class="d-name">Peace Lily</div>
+        <div class="d-sci">Spathiphyllum wallisii</div>
+        <div class="d-price">Rs. 450</div>
+        <div class="d-seller">
+          <div class="d-av">🌾</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1);">Hassan Nursery</div>
+            <div style="font-size:11px;color:var(--t3);">⭐ 4.8 · Gulberg, Lahore</div>
+          </div>
+          <div style="margin-left:auto;color:var(--p500);font-size:12px;font-weight:700;">View ›</div>
+        </div>
+        <div class="d-care">
+          <div class="d-chip"><div class="di">💧</div><span class="dl">Water</span><span class="dv">2×/week</span></div>
+          <div class="d-chip"><div class="di">☀️</div><span class="dl">Light</span><span class="dv">Indirect</span></div>
+          <div class="d-chip"><div class="di">🌡️</div><span class="dl">Temp</span><span class="dv">18–28°C</span></div>
+        </div>
+        <div style="font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:14px;">Air-purifying plant, perfect for Pakistani homes. Low maintenance, thrives in indirect light.</div>
+        <div class="d-acts">
+          <div class="btn-chat">💬 Chat</div>
+          <div class="btn-cart">🛒 Add to Cart</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S4 Home &nbsp;|&nbsp; "Add to Cart" → S8 Order Confirm</div>
+</div>
+
+<!-- S6 AI SCANNER -->
+<div class="sw">
+  <div class="sw-label">S6 · AI Scanner</div>
+  <div class="phone">
+    <div class="sb" style="color:rgba(255,255,255,.6);"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="scanner-pg">
+      <div class="sc-hdr">
+        <span style="color:rgba(255,255,255,.6);font-size:22px;cursor:pointer;">←</span>
+        <span class="sc-hdr-t">AI Plant Scanner</span>
+      </div>
+      <div class="cam">
+        <div class="cam-plant">🌿</div>
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="sc-line"></div>
+      </div>
+      <div class="sc-tip">Point at any plant — identifies species, health & care in under 5 seconds</div>
+      <div class="sc-bot">
+        <div class="sc-opts">
+          <div class="sc-opt"><span>🖼️</span>Gallery</div>
+          <div class="shutter">📸</div>
+          <div class="sc-opt"><span>💡</span>Flash</div>
+        </div>
+        <div style="color:rgba(255,255,255,.3);font-size:11px;">Powered by PlantNet API · 500 scans/day</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S4 Home &nbsp;|&nbsp; 📸 Shutter → S7 Scan Result</div>
+</div>
+
+<!-- S7 SCAN RESULT -->
+<div class="sw">
+  <div class="sw-label">S7 · Scan Result</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="sr-pg">
+      <div class="sr-hdr">
+        <div style="height:52px;"></div>
+        <div class="sr-em">🌿</div>
+        <div class="sr-nm">Peace Lily</div>
+        <div class="sr-sci">Spathiphyllum wallisii</div>
+        <div class="sr-conf">
+          <div class="lbl">AI Confidence Score</div>
+          <div class="sr-track"><div class="sr-fill"></div></div>
+          <div class="sr-pct">94% Match</div>
+        </div>
+      </div>
+      <div class="sr-body">
+        <div class="hlth-card">
+          <div class="hlth-circle"><div class="hlth-n">98</div><div class="hlth-l">/100</div></div>
+          <div class="hlth-txt"><h4>Excellent Health ✅</h4><p>No disease. Safe to purchase.</p></div>
+        </div>
+        <div class="sr-sec">Care Recommendations</div>
+        <div class="info-row"><div class="ir-ic">💧</div><div><div class="ir-l">Watering</div><div class="ir-v">Twice a week</div></div></div>
+        <div class="info-row"><div class="ir-ic">☀️</div><div><div class="ir-l">Sunlight</div><div class="ir-v">Indirect bright light</div></div></div>
+        <div class="info-row"><div class="ir-ic">⚠️</div><div><div class="ir-l">Toxicity</div><div class="ir-v" style="color:var(--red);">Toxic to pets</div></div></div>
+        <div class="btn btn-p" style="margin-top:14px;">View Matching Listings →</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S6 Scanner &nbsp;|&nbsp; "View Listings" → S4 Home</div>
+</div>
+
+<!-- S8 ORDER CONFIRM -->
+<div class="sw">
+  <div class="sw-label">S8 · Order Confirmation</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="oc-pg">
+      <div class="oc-hdr">
+        <span style="font-size:22px;color:var(--t3);">←</span>
+        <h2>Order Summary</h2>
+      </div>
+      <div class="oc-body">
+        <div class="sum-card">
+          <div class="sum-t">🛒 Your Order</div>
+          <div class="sum-plant">
+            <div class="sum-pi">🌿</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--t1);">Peace Lily</div>
+              <div style="font-size:11px;color:var(--t3);">Hassan Nursery · AI Verified ✅</div>
+              <div style="font-size:14px;font-weight:800;color:var(--p700);margin-top:3px;">Rs. 450 × 1</div>
+            </div>
+          </div>
+          <div class="sum-row"><span>Subtotal</span><span>Rs. 450</span></div>
+          <div class="sum-row"><span>Delivery</span><span>Rs. 120</span></div>
+          <div class="sum-row"><span>Platform</span><span>Rs. 15</span></div>
+          <div class="sum-row tot"><span>Total</span><span>Rs. 585</span></div>
+        </div>
+        <div class="oc-sec">
+          <div class="oc-sec-t"><span>📍 Delivery Address</span><span class="change">Change</span></div>
+          <div class="oc-addr">House 42, Street 7, DHA Phase 5<br>Lahore, Punjab 54000</div>
+        </div>
+        <div class="oc-sec">
+          <div class="oc-sec-t"><span>💳 Payment</span></div>
+          <div class="pay-opt"><div class="radio on"></div><span style="font-size:14px;font-weight:600;">Cash on Delivery</span></div>
+          <div class="pay-opt"><div class="radio"></div><span style="font-size:14px;color:var(--t3);">JazzCash / EasyPaisa</span></div>
+        </div>
+      </div>
+      <div class="oc-foot">
+        <div class="btn btn-p">Place Order · Rs. 585 →</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S5 Detail &nbsp;|&nbsp; "Place Order" → S9 Success</div>
+</div>
+
+<!-- S9 SUCCESS -->
+<div class="sw">
+  <div class="sw-label">S9 · Order Success</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);position:relative;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="suc-pg">
+      <div class="suc-ring">✅</div>
+      <div class="suc-t">Order Placed!</div>
+      <div class="suc-p">Your Peace Lily is confirmed.<br>A plant-safe rider has been assigned.</div>
+      <div class="oid">ORDER #PLT-2025-0483</div>
+      <div class="eta-lbl">Estimated Delivery</div>
+      <div class="eta-v">35 – 45 min</div>
+      <div class="suc-acts">
+        <div class="btn btn-p">Track My Order 📍</div>
+        <div class="btn btn-o">Continue Shopping 🌿</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">"Track My Order" → S10 Tracking &nbsp;|&nbsp; "Continue" → S4 Home</div>
+</div>
+
+<!-- S10 TRACKING -->
+<div class="sw">
+  <div class="sw-label">S10 · Order Tracking</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="trk-pg">
+      <div class="map">
+        <div class="map-grid"></div>
+        <div class="map-road"></div>
+        <div class="map-rider">🛵</div>
+        <div class="map-dest">📍</div>
+        <div class="map-back">←</div>
+      </div>
+      <div class="trk-body">
+        <div class="trk-status">
+          <div class="trk-ic">🚚</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--t1);">On the Way!</div>
+            <div style="font-size:12px;color:var(--t3);">Estimated arrival: 12 minutes</div>
+          </div>
+        </div>
+        <div class="trk-steps">
+          <div class="step"><div class="step-d">✓</div><div><div class="step-t">Order Confirmed</div><div class="step-tm">9:30 AM</div></div></div>
+          <div class="step"><div class="step-d">✓</div><div><div class="step-t">Picked from Seller</div><div class="step-tm">9:38 AM</div></div></div>
+          <div class="step"><div class="step-d now">→</div><div><div class="step-t">Out for Delivery</div><div class="step-tm">Now · 12 min</div></div></div>
+          <div class="step"><div class="step-d pnd">○</div><div><div class="step-t">Delivered</div><div class="step-tm">~9:53 AM</div></div></div>
+        </div>
+        <div class="rider-row">
+          <div class="rider-av">👨</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1);">Usman Tariq</div>
+            <div style="font-size:11px;color:var(--t3);">⭐ 4.9 · Plant-Safe Rider</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:12px;font-size:22px;">📞 💬</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S9 Success</div>
+</div>
+
+</div><!-- end buyer grid -->
+
+<!-- ============================================================
+     SELLER FLOW
+============================================================ -->
+<div class="sec">Seller Flow — 3 Screens</div>
+<div class="grid">
+
+<!-- S11 SELLER DASHBOARD -->
+<div class="sw">
+  <div class="sw-label">S11 · Seller Dashboard</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="sel-pg">
+      <div class="sel-hdr">
+        <div style="height:52px;"></div>
+        <div class="sel-g">Your Store 🌾</div>
+        <div class="sel-nm">Hassan's Nursery</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-n">Rs.12K</div><div class="stat-l">This Week</div></div>
+          <div class="stat"><div class="stat-n">23</div><div class="stat-l">Orders</div></div>
+          <div class="stat"><div class="stat-n">4.8⭐</div><div class="stat-l">Rating</div></div>
+        </div>
+      </div>
+      <div class="sel-body">
+        <div class="add-btn-full">+ Add New Plant Listing</div>
+        <div class="sec-row"><span class="sec-t">Recent Orders</span><span class="see">See all</span></div>
+        <div class="ord-item">
+          <div class="ord-ic">🌿</div>
+          <div><div class="ord-nm">Peace Lily × 1</div><div class="ord-by">Shehroz · 10 min ago</div></div>
+          <div class="badge bdg-pend">Pending</div>
+        </div>
+        <div class="ord-item">
+          <div class="ord-ic">🪴</div>
+          <div><div class="ord-nm">Money Plant × 2</div><div class="ord-by">Fatima · 1 hr ago</div></div>
+          <div class="badge bdg-tr">In Transit</div>
+        </div>
+        <div class="ord-item">
+          <div class="ord-ic">🌺</div>
+          <div><div class="ord-nm">Anthurium × 1</div><div class="ord-by">Ali · Yesterday</div></div>
+          <div class="badge bdg-del">Delivered</div>
+        </div>
+      </div>
+      <div class="bnav">
+        <div class="bn on"><div class="bn-ic">📊</div>Dashboard</div>
+        <div class="bn"><div class="bn-ic">🌿</div>Listings</div>
+        <div class="bn"><div class="bn-ic">📦</div>Orders</div>
+        <div class="bn"><div class="bn-ic">💰</div>Earnings</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">"+ Add Plant" → S12 Add Listing &nbsp;|&nbsp; 💰 nav → S13 Earnings</div>
+</div>
+
+<!-- S12 ADD LISTING -->
+<div class="sw">
+  <div class="sw-label">S12 · Add Plant Listing</div>
+  <div class="phone">
+    <div class="sb" style="color:var(--t1);"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="al-pg">
+      <div class="al-hdr">
+        <span style="font-size:22px;color:var(--t3);">←</span>
+        <h2>Add Plant Listing</h2>
+      </div>
+      <div class="al-body">
+        <div class="photo-up">
+          <div class="big">📷</div>
+          <p>Upload plant photo</p>
+          <div class="scan-cta">🤖 Scan with AI</div>
+        </div>
+        <div class="fg"><label class="fl">Plant Name</label><div class="fi on">Peace Lily</div></div>
+        <div class="fg"><label class="fl">Category</label><div class="fi" style="justify-content:space-between;"><span>Indoor Plant</span><span style="color:var(--t4);">▼</span></div></div>
+        <div class="price-row">
+          <div class="fg"><label class="fl">Price (Rs.)</label><div class="fi">450</div></div>
+          <div class="fg"><label class="fl">Stock</label><div class="fi">12 pcs</div></div>
+        </div>
+        <div class="fg"><label class="fl">Description</label><div class="fi" style="height:58px;align-items:flex-start;padding-top:11px;"><span style="color:var(--t4);font-size:13px;">Care tips, details…</span></div></div>
+        <div class="ai-ver">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;"><span>🤖</span><span style="font-size:13px;font-weight:700;color:var(--p700);">AI Verification Result</span></div>
+          <div style="font-size:12px;color:var(--t2);">Species: <b>Spathiphyllum wallisii</b></div>
+          <div style="font-size:12px;color:var(--t2);">Health: <b style="color:var(--p700);">98/100 ✅ Safe to sell</b></div>
+        </div>
+        <div class="btn btn-p">Publish Listing 🚀</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">← Back → S11 Dashboard &nbsp;|&nbsp; "Publish" → S11 Dashboard</div>
+</div>
+
+<!-- S13 SELLER EARNINGS -->
+<div class="sw">
+  <div class="sw-label">S13 · Seller Earnings</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="earn-pg">
+      <div class="earn-hdr">
+        <div style="height:52px;"></div>
+        <h2>Earnings 💰</h2>
+        <div class="earn-tot">
+          <div class="earn-big">Rs. 48,250</div>
+          <div class="earn-period">Total · March 2025</div>
+        </div>
+        <div class="earn-row">
+          <div class="earn-item"><div class="v">Rs.42K</div><div class="l">After Commission</div></div>
+          <div class="earn-item"><div class="v">Rs.6.2K</div><div class="l">Commission (5%)</div></div>
+        </div>
+      </div>
+      <div class="earn-body">
+        <div class="ptabs"><div class="ptab">Daily</div><div class="ptab on">Weekly</div><div class="ptab">Monthly</div></div>
+        <div class="chart">
+          <div class="bar s"></div><div class="bar m"></div><div class="bar h on"></div>
+          <div class="bar m"></div><div class="bar s"></div><div class="bar h"></div><div class="bar m"></div>
+        </div>
+        <div class="sec-row"><span class="sec-t">Recent</span></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🌿</div><div><div class="h-nm">Peace Lily × 1</div><div class="h-dt">Today 9:30 AM</div></div></div><div class="h-amt">+Rs.427</div></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🪴</div><div><div class="h-nm">Money Plant × 2</div><div class="h-dt">Today 8:15 AM</div></div></div><div class="h-amt">+Rs.568</div></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🌺</div><div><div class="h-nm">Anthurium × 1</div><div class="h-dt">Yesterday</div></div></div><div class="h-amt">+Rs.1,140</div></div>
+      </div>
+      <div class="bnav">
+        <div class="bn"><div class="bn-ic">📊</div>Dashboard</div>
+        <div class="bn"><div class="bn-ic">🌿</div>Listings</div>
+        <div class="bn"><div class="bn-ic">📦</div>Orders</div>
+        <div class="bn on"><div class="bn-ic">💰</div>Earnings</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">📊 nav → S11 Dashboard</div>
+</div>
+
+</div><!-- end seller grid -->
+
+<!-- ============================================================
+     RIDER FLOW
+============================================================ -->
+<div class="sec">Rider Flow — 2 Screens</div>
+<div class="grid">
+
+<!-- S14 RIDER DASHBOARD -->
+<div class="sw">
+  <div class="sw-label">S14 · Rider Dashboard</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="rd-pg">
+      <div class="rd-hdr">
+        <div style="height:52px;"></div>
+        <div class="rd-g">Welcome back 🛵</div>
+        <div class="rd-nm">Usman Tariq</div>
+        <div class="rd-status"><div class="dot-gr"></div>Online · Accepting Orders</div>
+        <div class="rd-earn">
+          <div class="rd-card"><div class="n">Rs.2,400</div><div class="l">Today</div></div>
+          <div class="rd-card"><div class="n">8</div><div class="l">Deliveries</div></div>
+          <div class="rd-card"><div class="n">4.9⭐</div><div class="l">Rating</div></div>
+        </div>
+      </div>
+      <div class="rd-body">
+        <div class="sec-row"><span class="sec-t">📦 Orders Nearby</span></div>
+        <div class="del-card">
+          <div class="del-top">
+            <div><div style="font-size:13px;font-weight:700;color:var(--t1);">Peace Lily — Hassan Nursery</div><div style="font-size:11px;color:var(--t3);">1 plant · Fragile 🌿</div></div>
+            <div class="del-pay">Rs.180</div>
+          </div>
+          <div class="del-addr">
+            <div class="da-row"><span>🟢</span>Gulberg III, Lahore</div>
+            <div class="da-row"><span>🔴</span>DHA Phase 5, Lahore</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div class="dist-bdg">📍 3.2 km</div><span style="font-size:11px;color:var(--t3);">⏱ ~14 min</span></div>
+          <div class="del-acts"><div class="btn-acc">✓ Accept</div><div class="btn-dec">✕ Decline</div></div>
+        </div>
+        <div class="del-card">
+          <div class="del-top">
+            <div><div style="font-size:13px;font-weight:700;color:var(--t1);">Monstera × 2 — EcoRoots</div><div style="font-size:11px;color:var(--t3);">2 plants · Large pots</div></div>
+            <div class="del-pay">Rs.260</div>
+          </div>
+          <div class="del-addr">
+            <div class="da-row"><span>🟢</span>Model Town, Lahore</div>
+            <div class="da-row"><span>🔴</span>Johar Town, Lahore</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div class="dist-bdg">📍 5.8 km</div><span style="font-size:11px;color:var(--t3);">⏱ ~22 min</span></div>
+          <div class="del-acts"><div class="btn-acc">✓ Accept</div><div class="btn-dec">✕ Decline</div></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <div class="bn on"><div class="bn-ic">🏠</div>Home</div>
+        <div class="bn"><div class="bn-ic">🗺️</div>Map</div>
+        <div class="bn"><div class="bn-ic">📦</div>History</div>
+        <div class="bn"><div class="bn-ic">💰</div>Earnings</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">💰 nav → S15 Rider Earnings &nbsp;|&nbsp; 👤 Profile → S16</div>
+</div>
+
+<!-- S15 RIDER EARNINGS -->
+<div class="sw">
+  <div class="sw-label">S15 · Rider Earnings</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="earn-pg">
+      <div class="earn-hdr" style="background:linear-gradient(135deg,#C2521A,var(--org));">
+        <div style="height:52px;"></div>
+        <h2>Rider Earnings 🛵</h2>
+        <div class="earn-tot">
+          <div class="earn-big">Rs. 14,600</div>
+          <div class="earn-period">This Week · 58 Deliveries</div>
+        </div>
+        <div class="earn-row">
+          <div class="earn-item"><div class="v">58</div><div class="l">Deliveries</div></div>
+          <div class="earn-item"><div class="v">Rs.252</div><div class="l">Avg Per Trip</div></div>
+        </div>
+      </div>
+      <div class="earn-body">
+        <div class="ptabs"><div class="ptab on">Daily</div><div class="ptab">Weekly</div><div class="ptab">Monthly</div></div>
+        <div class="chart">
+          <div class="bar m on"></div><div class="bar h"></div><div class="bar s"></div>
+          <div class="bar h on"></div><div class="bar m"></div><div class="bar s"></div><div class="bar m"></div>
+        </div>
+        <div class="sec-row"><span class="sec-t">Today's Deliveries</span></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🌿</div><div><div class="h-nm">Peace Lily — Gulberg→DHA</div><div class="h-dt">9:52 AM · 14 min</div></div></div><div class="h-amt">+Rs.180</div></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🌳</div><div><div class="h-nm">Monstera × 2</div><div class="h-dt">8:30 AM · 22 min</div></div></div><div class="h-amt">+Rs.260</div></div>
+        <div class="h-item"><div class="h-left"><div class="h-ic">🪴</div><div><div class="h-nm">Snake Plant × 1</div><div class="h-dt">7:45 AM · 18 min</div></div></div><div class="h-amt">+Rs.160</div></div>
+      </div>
+      <div class="bnav">
+        <div class="bn"><div class="bn-ic">🏠</div>Home</div>
+        <div class="bn"><div class="bn-ic">🗺️</div>Map</div>
+        <div class="bn"><div class="bn-ic">📦</div>History</div>
+        <div class="bn on"><div class="bn-ic">💰</div>Earnings</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">🏠 nav → S14 Rider Dashboard</div>
+</div>
+
+</div><!-- end rider grid -->
+
+<!-- ============================================================
+     SHARED
+============================================================ -->
+<div class="sec">Shared — 1 Screen</div>
+<div class="grid">
+
+<!-- S16 PROFILE -->
+<div class="sw">
+  <div class="sw-label">S16 · Profile (All Roles)</div>
+  <div class="phone">
+    <div class="sb" style="color:#fff;"><span>9:41</span><div class="sb-ic">📶 🔋</div></div>
+    <div class="prof-pg">
+      <div class="prof-hdr">
+        <div style="height:52px;"></div>
+        <div class="prof-av">👤</div>
+        <div class="prof-nm">Shehroz Malik</div>
+        <div class="prof-em">shehroz@gmail.com · Buyer</div>
+      </div>
+      <div class="prof-body">
+        <div class="prof-sec">
+          <div class="prof-row"><div class="pr-ic">📦</div><div class="pr-lbl">My Orders</div><div class="pr-arr">›</div></div>
+          <div class="prof-row"><div class="pr-ic">🤍</div><div class="pr-lbl">Saved Plants</div><div class="pr-arr">›</div></div>
+          <div class="prof-row"><div class="pr-ic">⭐</div><div class="pr-lbl">My Reviews</div><div class="pr-arr">›</div></div>
+        </div>
+        <div class="prof-sec">
+          <div class="prof-row"><div class="pr-ic">📍</div><div class="pr-lbl">Saved Addresses</div><div class="pr-arr">›</div></div>
+          <div class="prof-row"><div class="pr-ic">🔔</div><div class="pr-lbl">Notifications</div><div class="pr-arr">›</div></div>
+          <div class="prof-row"><div class="pr-ic">🌐</div><div class="pr-lbl">Language · اردو / English</div><div class="pr-arr">›</div></div>
+        </div>
+        <div class="prof-sec">
+          <div class="prof-row"><div class="pr-ic">🔒</div><div class="pr-lbl">Privacy & Security</div><div class="pr-arr">›</div></div>
+          <div class="prof-row danger"><div class="pr-ic">🚪</div><div class="pr-lbl">Sign Out</div><div class="pr-arr">›</div></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <div class="bn"><div class="bn-ic">🏠</div>Home</div>
+        <div class="bn"><div class="bn-ic">🔍</div>Explore</div>
+        <div class="bn"><div class="bn-ic">📦</div>Orders</div>
+        <div class="bn on"><div class="bn-ic">👤</div>Profile</div>
+      </div>
+    </div>
+  </div>
+  <div class="sw-arrow">🏠 nav → role home &nbsp;|&nbsp; Sign Out → S1 Splash</div>
+</div>
+
+</div><!-- end shared grid -->
+
+<!-- FIGMA GUIDE -->
+<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px;margin-top:48px;">
+  <div style="color:var(--p300);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">📐 How to Import Into Figma — Step by Step</div>
+  <div style="color:#fff;font-size:14px;line-height:2;">
+    <b style="color:var(--p300);">1.</b> Open this HTML in Chrome<br>
+    <b style="color:var(--p300);">2.</b> Press <b>F12</b> → Elements tab → find <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;">.phone</code> div for each screen<br>
+    <b style="color:var(--p300);">3.</b> Right-click the <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;">.phone</code> div → <b>Capture node screenshot</b> → saves as 390×844px PNG<br>
+    <b style="color:var(--p300);">4.</b> In Figma: <b>New Frame → iPhone 14 (390×844)</b> → drag PNG inside<br>
+    <b style="color:var(--p300);">5.</b> Repeat for all 16 screens, label them S1–S16<br>
+    <b style="color:var(--p300);">6.</b> Add <b>Prototype connections</b> using the flow map above — draw arrows between frames on the Prototype tab<br>
+    <b style="color:var(--p300);">7.</b> Set transition: <b>Smart Animate, 300ms, Ease Out</b>
+  </div>
+</div>
+
+<div style="text-align:center;margin-top:48px;color:var(--t3);font-size:12px;padding-bottom:60px;">
+  🌿 Plantea · 16 Screens · UET Lahore IDEAL Labs · Team: M Bilal · M Saddique · M Usman · M Muzammil
+</div>
+
+</body>
+</html>

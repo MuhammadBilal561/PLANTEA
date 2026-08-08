@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Plantea",
+    "slug": "plantea-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plantea.app"
+    },
+    "android": {
+      "package": "com.plantea.app",
+      "permissions": [
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-location",
+      "expo-image-picker",
+      "expo-font",
+      "expo-web-browser"
+    ]
+  }
+}
