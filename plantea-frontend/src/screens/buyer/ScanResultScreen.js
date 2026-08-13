@@ -2,6 +2,9 @@ import React from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function ScanResultScreen({ navigation, route }) {
   const { scanResult, imageUri } = route.params || {};
@@ -10,27 +13,37 @@ export default function ScanResultScreen({ navigation, route }) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>No scan result available</Text>
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.buttonText}>Go Back</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.primaryButtonText}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   const getHealthColor = (score) => {
-    if (score >= 80) return '#27ae60';
-    if (score >= 60) return '#f39c12';
-    return '#e74c3c';
+    if (score >= 80) return COLORS.p500;
+    if (score >= 60) return COLORS.yel;
+    return COLORS.red;
   };
 
+  const confidence = scanResult.confidence ?? 0;
+  const healthScore = scanResult.healthScore ?? 0;
+  const care = scanResult.care || {};
+
+  const careRows = [
+    { icon: 'droplet', label: 'Watering', value: care.watering },
+    { icon: 'sun', label: 'Sunlight', value: care.sunlight },
+    { icon: 'layers', label: 'Soil', value: care.soil },
+    { icon: 'thermometer', label: 'Temperature', value: care.temperature },
+    { icon: 'wind', label: 'Humidity', value: care.humidity },
+  ].filter(r => r.value);
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
+        <TouchableOpacity style={styles.backRow} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={16} color={COLORS.p700} />
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Scan Result</Text>
       </View>
@@ -38,67 +51,105 @@ export default function ScanResultScreen({ navigation, route }) {
       {imageUri && (
         <View style={styles.imageContainer}>
           <Image source={{ uri: imageUri }} style={styles.plantImage} />
+          <View style={styles.aiBadge}>
+            <Icon name="award" size={12} color={COLORS.white} />
+            <Text style={styles.aiBadgeText}>AI Analyzed</Text>
+          </View>
         </View>
       )}
 
       <View style={styles.resultCard}>
         <View style={styles.resultHeader}>
-          <Text style={styles.plantName}>{scanResult.identified_name || 'Unknown Plant'}</Text>
-          {scanResult.confidence_pct && (
-            <View style={styles.confidenceBadge}>
-              <Text style={styles.confidenceText}>{scanResult.confidence_pct}% match</Text>
+          <Text style={styles.plantName}>{scanResult.identifiedName || 'Unknown Plant'}</Text>
+          <View style={styles.confidenceBadge}>
+            <Text style={styles.confidenceText}>{Math.round(confidence)}% match</Text>
+          </View>
+        </View>
+
+        {scanResult.scientificName && (
+          <Text style={styles.scientificName}>{scanResult.scientificName}</Text>
+        )}
+
+        <View style={styles.healthContainer}>
+          <View style={styles.healthHeader}>
+            <Text style={styles.healthLabel}>Health Score</Text>
+            <Text style={[styles.healthScore, { color: getHealthColor(healthScore) }]}>
+              {healthScore}/100
+            </Text>
+          </View>
+          <View style={styles.healthBar}>
+            <View
+              style={[
+                styles.healthFill,
+                { width: `${healthScore}%`, backgroundColor: getHealthColor(healthScore) },
+              ]}
+            />
+          </View>
+          {scanResult.diseaseDetected && (
+            <View style={styles.diseaseCard}>
+              <View style={styles.diseaseTitleRow}>
+                <Icon name="alert-triangle" size={14} color="#9A3412" />
+                <Text style={styles.diseaseTitle}>{scanResult.diseaseDetected}</Text>
+              </View>
+              {scanResult.treatmentSuggestion && (
+                <Text style={styles.diseaseText}>{scanResult.treatmentSuggestion}</Text>
+              )}
             </View>
           )}
         </View>
 
-        {scanResult.scientific_name && (
-          <Text style={styles.scientificName}>{scanResult.scientific_name}</Text>
-        )}
-
-        {scanResult.health_score && (
-          <View style={styles.healthContainer}>
-            <Text style={styles.healthLabel}>Health Score</Text>
-            <View style={styles.healthBar}>
-              <View 
-                style={[
-                  styles.healthFill, 
-                  { 
-                    width: `${scanResult.health_score}%`,
-                    backgroundColor: getHealthColor(scanResult.health_score)
-                  }
-                ]} 
-              />
-            </View>
-            <Text style={[styles.healthScore, { color: getHealthColor(scanResult.health_score) }]}>
-              {scanResult.health_score}/100
-            </Text>
-          </View>
-        )}
-
-        {scanResult.is_toxic && (
+        {scanResult.isToxic && (
           <View style={styles.warningCard}>
-            <Text style={styles.warningIcon}>⚠️</Text>
-            <Text style={styles.warningText}>This plant may be toxic to pets or humans</Text>
+            <Icon name="alert-octagon" size={20} color="#856404" />
+            <Text style={styles.warningText}>
+              {scanResult.toxicityNote || 'This plant may be toxic to pets or humans'}
+            </Text>
           </View>
         )}
       </View>
 
-      {scanResult.care_info && (
+      {careRows.length > 0 && (
         <View style={styles.careCard}>
-          <Text style={styles.careTitle}>🌱 Care Instructions</Text>
-          <Text style={styles.careText}>{scanResult.care_info}</Text>
+          <View style={styles.careTitleRow}>
+            <Icon name="leaf" size={16} color={COLORS.p700} />
+            <Text style={styles.careTitle}>Care Instructions</Text>
+          </View>
+          {careRows.map((row, index) => (
+            <View key={index} style={styles.careRow}>
+              <Icon name={row.icon} size={18} color={COLORS.p700} />
+              <View style={styles.careRowText}>
+                <Text style={styles.careLabel}>{row.label}</Text>
+                <Text style={styles.careValue}>{row.value}</Text>
+              </View>
+            </View>
+          ))}
+          {care.tips && (
+            <View style={styles.careTipRow}>
+              <Icon name="lightbulb" size={14} color={COLORS.p700} />
+              <Text style={styles.careTipText}>{care.tips}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {scanResult.funFact && (
+        <View style={styles.funFactCard}>
+          <View style={styles.funFactRow}>
+            <Icon name="leaf" size={14} color={COLORS.p700} />
+            <Text style={styles.funFactText}>{scanResult.funFact}</Text>
+          </View>
         </View>
       )}
 
       <View style={styles.actionsContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('AiScanner')}
         >
           <Text style={styles.secondaryButtonText}>Scan Another</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => navigation.navigate('Home')}
         >
@@ -109,8 +160,9 @@ export default function ScanResultScreen({ navigation, route }) {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>About AI Identification</Text>
         <Text style={styles.infoText}>
-          Our AI uses advanced plant recognition technology to identify species and assess health. 
-          Results are most accurate with clear, well-lit photos of leaves and flowers.
+          The scanner analyzes leaf color and texture to estimate plant health, then matches
+          the plant against a local knowledge base. Results are most accurate with clear,
+          well-lit photos of leaves and flowers.
         </Text>
       </View>
     </ScrollView>
@@ -120,44 +172,67 @@ export default function ScanResultScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.bg,
+  },
+  content: {
+    paddingBottom: 40,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: COLORS.p100,
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
   },
   backText: {
     fontSize: 16,
-    color: '#27ae60',
-    marginBottom: 10,
+    color: COLORS.p700,
+    fontFamily: FONTS.nunitoBold,
   },
   title: {
+    fontFamily: FONTS.soraExtraBold,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.t1,
   },
   imageContainer: {
     alignItems: 'center',
     padding: 20,
+    position: 'relative',
   },
   plantImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 16,
+    width: 220,
+    height: 220,
+    borderRadius: 20,
+    ...SHADOWS.card,
+  },
+  aiBadge: {
+    position: 'absolute',
+    bottom: 30,
+    backgroundColor: COLORS.p700,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  aiBadgeText: {
+    color: COLORS.white,
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 11,
   },
   resultCard: {
-    backgroundColor: '#fff',
-    margin: 20,
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
     padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: RADII.card,
+    ...SHADOWS.card,
   },
   resultHeader: {
     flexDirection: 'row',
@@ -166,43 +241,49 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   plantName: {
+    fontFamily: FONTS.soraExtraBold,
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.t1,
     flex: 1,
+    marginRight: 8,
   },
   confidenceBadge: {
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    backgroundColor: COLORS.p700,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
   },
   confidenceText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: FONTS.nunitoBold,
   },
   scientificName: {
     fontSize: 14,
     fontStyle: 'italic',
-    color: '#666',
+    color: COLORS.t3,
     marginBottom: 15,
+    fontFamily: FONTS.nunito,
   },
   healthContainer: {
-    marginTop: 15,
+    marginTop: 10,
+  },
+  healthHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   healthLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 8,
+    fontFamily: FONTS.nunitoBold,
+    color: COLORS.t1,
   },
   healthBar: {
     height: 8,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: COLORS.p50,
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 8,
   },
   healthFill: {
     height: '100%',
@@ -210,11 +291,35 @@ const styles = StyleSheet.create({
   },
   healthScore: {
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontFamily: FONTS.soraBold,
+  },
+  diseaseCard: {
+    backgroundColor: '#FFF7ED',
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.org,
+    padding: 12,
+    marginTop: 12,
+    borderRadius: 8,
+  },
+  diseaseTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  diseaseTitle: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 13,
+    color: '#9A3412',
+  },
+  diseaseText: {
+    fontFamily: FONTS.nunito,
+    fontSize: 12,
+    color: '#7C2D12',
+    lineHeight: 18,
   },
   warningCard: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#FFF7ED',
     borderLeftWidth: 4,
     borderLeftColor: '#ffc107',
     padding: 15,
@@ -222,108 +327,145 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  warningIcon: {
-    fontSize: 20,
-    marginRight: 10,
+    gap: 10,
   },
   warningText: {
     flex: 1,
     fontSize: 14,
     color: '#856404',
-    fontWeight: '600',
+    fontFamily: FONTS.nunitoBold,
   },
   careCard: {
-    backgroundColor: '#fff',
-    margin: 20,
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
+    marginTop: 16,
     padding: 20,
-    borderRadius: 16,
+    borderRadius: RADII.card,
     borderLeftWidth: 4,
-    borderLeftColor: '#27ae60',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderLeftColor: COLORS.p700,
+    ...SHADOWS.card,
   },
   careTitle: {
+    fontFamily: FONTS.soraBold,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.t1,
+    marginBottom: 12,
+  },
+  careTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  careRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
     marginBottom: 10,
   },
-  careText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+  careRowText: {
+    flex: 1,
+  },
+  careLabel: {
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 12,
+    color: COLORS.t3,
+  },
+  careValue: {
+    fontFamily: FONTS.nunito,
+    fontSize: 13,
+    color: COLORS.t1,
+    lineHeight: 18,
+  },
+  careTipRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 6,
+  },
+  careTipText: {
+    flex: 1,
+    fontFamily: FONTS.nunito,
+    fontSize: 12,
+    color: COLORS.p700,
+    lineHeight: 18,
+  },
+  funFactCard: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: COLORS.p50,
+    borderRadius: RADII.card,
+  },
+  funFactRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
+  funFactText: {
+    flex: 1,
+    fontFamily: FONTS.nunito,
+    fontSize: 13,
+    color: COLORS.t2,
+    lineHeight: 19,
   },
   actionsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    gap: 15,
+    marginTop: 20,
+    gap: 12,
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: '#27ae60',
+    backgroundColor: COLORS.p700,
     paddingVertical: 15,
-    borderRadius: 12,
+    borderRadius: RADII.btn,
     alignItems: 'center',
   },
   primaryButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontFamily: FONTS.soraBold,
   },
   secondaryButton: {
     flex: 1,
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#27ae60',
+    borderColor: COLORS.p700,
     paddingVertical: 15,
-    borderRadius: 12,
+    borderRadius: RADII.btn,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#27ae60',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: COLORS.p700,
+    fontSize: 15,
+    fontFamily: FONTS.soraBold,
   },
   infoCard: {
-    backgroundColor: '#f8f9fa',
-    margin: 20,
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
+    marginTop: 16,
     padding: 20,
-    borderRadius: 12,
+    borderRadius: RADII.card,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: COLORS.p100,
   },
   infoTitle: {
+    fontFamily: FONTS.soraBold,
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.t1,
     marginBottom: 8,
   },
   infoText: {
+    fontFamily: FONTS.nunito,
     fontSize: 12,
-    color: '#666',
+    color: COLORS.t3,
     lineHeight: 18,
   },
   errorText: {
     fontSize: 16,
-    color: '#e74c3c',
+    color: COLORS.red,
     textAlign: 'center',
     marginTop: 100,
-  },
-  button: {
-    backgroundColor: '#27ae60',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 12,
-    alignItems: 'center',
-    margin: 20,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

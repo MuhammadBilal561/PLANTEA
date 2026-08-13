@@ -25,8 +25,12 @@ const plantValidation = [
 ];
 
 // Public routes (no login required)
-router.get('/',     plantsController.getAllPlants);   // browse marketplace
-router.get('/:id',  plantsController.getPlantById);  // view plant detail
+// NOTE: static single-segment routes MUST be declared before '/:id'.
+router.get('/',           plantsController.getAllPlants);   // browse marketplace
+router.get('/featured',   plantsController.getFeatured);    // home spotlight
+router.get('/trending',   plantsController.getTrending);    // bestsellers
+router.get('/categories', plantsController.getCategories);  // filter chips
+router.get('/:id',        plantsController.getPlantById);   // view plant detail
 
 // Protected routes — seller only
 router.get('/my/listings', verifyToken, allowRoles(['seller']), plantsController.getMyListings);

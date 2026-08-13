@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, RADII, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function ResetPasswordScreen({ navigation, route }) {
   const resetToken = route.params?.reset_token || '';
@@ -102,7 +103,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>←</Text>
+        <Icon name="arrow-left" size={24} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -136,7 +137,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeButton}
             >
-              <Text style={styles.eyeIcon}>{showPassword ? '👁' : '👁'}</Text>
+              <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
             </TouchableOpacity>
           </View>
           {passwordStrength && (
@@ -175,7 +176,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               style={styles.eyeButton}
             >
-              <Text style={styles.eyeIcon}>{showConfirmPassword ? '👁' : '👁'}</Text>
+              <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
             </TouchableOpacity>
           </View>
           {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
@@ -214,10 +215,6 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     marginBottom: 20,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
   },
   content: {
     flex: 1,
@@ -267,9 +264,6 @@ const styles = StyleSheet.create({
   },
   eyeButton: {
     padding: 14,
-  },
-  eyeIcon: {
-    fontSize: 18,
   },
   errorText: {
     fontFamily: FONTS.nunito,

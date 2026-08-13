@@ -4,87 +4,90 @@ Complete guide to deploy Plantea to production.
 
 ## Prerequisites
 
-- Supabase account (free tier)
-- PlantNet API account (free tier)
-- Railway account (free tier)
-- Expo account (free tier)
+- Node.js 18+ host (any VPS, Railway, Render, Heroku, Docker)
+- No external database or accounts required — the app is fully self-contained
 
-## Backend Deployment (Railway)
+## Backend Deployment
 
-### 1. Database Setup (Supabase)
+### 1. Deploy the app as one Node.js process
 
-1. Create new project at [supabase.com](https://supabase.com)
-2. Go to SQL Editor → New Query
-3. Copy and paste `plantea-backend/database/schema.sql`
-4. Click "Run" to create all tables
-5. Go to Settings → API to get your keys
+Plantea's backend serves **both the API and the built web frontend** on a single port, so a deployment is just one process:
 
-### 2. Get PlantNet API Key
+```bash
+# 1. Build the web frontend (do this on a build machine)
+cd plantea-frontend
+npm install
+npx expo export --platform web   # outputs to plantea-frontend/dist
 
-1. Register at [my-api.plantnet.org](https://my-api.plantnet.org)
-2. Create new API key (500 free requests/day)
-3. Copy the API key
+# 2. Deploy the whole repo to your host
+cd ..
+git add plantea-frontend/dist
+git commit -m "build: bundle web frontend"
+git push
+```
 
-### 3. Deploy to Railway
-
-1. Push code to GitHub
-2. Connect Railway to your GitHub repo
-3. Deploy from `main` branch
-4. Add environment variables in Railway dashboard:
+### 2. Set environment variables on the host
 
 ```env
 NODE_ENV=production
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-key
+PORT=3000
 JWT_SECRET=your-super-secure-random-string
-PLANTNET_API_KEY=your-plantnet-key
-COMMISSION_FREE_TIER=10.00
-COMMISSION_PAID_TIER=5.00
-DEFAULT_DELIVERY_FEE=150.00
+PLANTNET_API_KEY=your-plantnet-key   # optional
+SMTP_HOST=                           # optional, for real reset emails
+SMTP_USER=                           # optional
+SMTP_PASS=                           # optional
 ```
 
-5. Railway will auto-deploy and provide a URL
+### 3. Start the server
+
+```bash
+cd plantea-backend
+npm install
+node server.js
+```
+
+On first start the SQLite database (`data/plantea.db`) and demo seeds are created automatically.
 
 ### 4. Verify Deployment
 
-Visit: `https://your-app.railway.app/health`
+Visit: `https://your-host/health`
 
 Should return:
 ```json
 {
-  "status": "OK",
-  "timestamp": "2026-04-01T12:00:00.000Z",
-  "uptime": 123.45,
-  "environment": "production"
+  "success": true,
+  "data": {
+    "status": "OK",
+    "service": "Plantea Backend API",
+    "database": "SQLite (self-contained, free)",
+    "uptime_seconds": 123,
+    "environment": "production"
+  }
 }
 ```
 
-## Frontend Deployment (Expo)
+The app itself is available at the root: `https://your-host/` — it talks to `/api/*` on the same origin, so no CORS configuration is needed.
 
-### 1. Update API URL
+## Frontend Deployment (Native)
+
+### 1. Update API URL for a remote backend
 
 Edit `plantea-frontend/.env`:
 ```env
-EXPO_PUBLIC_API_BASE_URL=https://your-app.railway.app/api
+EXPO_PUBLIC_API_BASE_URL=https://your-host/api
 ```
 
-### 2. Build and Publish
+### 2. Build Native Apps
 
 ```bash
 cd plantea-frontend
 npm install
-expo login
-expo publish
-```
 
-### 3. Build Native Apps
-
-```bash
 # Android APK
-expo build:android
+npx expo run:android      # or: expo build:android
 
 # iOS IPA (requires Apple Developer account)
-expo build:ios
+npx expo run:ios          # or: expo build:ios
 ```
 
 ## Testing Checklist
@@ -95,6 +98,7 @@ expo build:ios
 - [ ] User login: `POST /api/auth/login`
 - [ ] Browse plants: `GET /api/plants`
 - [ ] Plant scanner: `POST /api/scanner/identify`
+- [ ] Image upload: `POST /api/uploads`
 
 ### Frontend App Tests
 - [ ] App loads without crashes
@@ -105,42 +109,26 @@ expo build:ios
 
 ## Production Monitoring
 
-### Railway Dashboard
-- Monitor CPU/Memory usage
-- Check deployment logs
-- Set up alerts for downtime
-
-### Supabase Dashboard
-- Monitor database performance
-- Check API usage limits
-- Review query performance
-
-### PlantNet API
-- Monitor daily usage (500 limit)
-- Check identification accuracy
-- Plan upgrade if needed
+- **Server logs**: structured INFO/WARN/ERROR logging (see `src/utils/logger.js`)
+- **Error rate**: surfaced live on `/health` as `total_errors_this_session`
+- **Response time**: every response includes an `X-Response-Time` header
+- **Database**: SQLite file — back it up by copying `data/plantea.db`
 
 ## Scaling Considerations
 
-### Free Tier Limits
-- Railway: 500 hours/month
-- Supabase: 500MB database, 2GB bandwidth
-- PlantNet: 500 requests/day
-
-### Upgrade Path
-- Railway Pro: $5/month (unlimited hours)
-- Supabase Pro: $25/month (8GB database)
-- PlantNet Premium: €9/month (10,000 requests/day)
+- **Storage**: SQLite is perfect for single-node deployments. If you outgrow it, swap `src/config/db.js` for PostgreSQL.
+- **Images**: uploaded images are stored in `uploads/` — back up or use an S3-compatible bucket for large deployments.
+- **AI**: the built-in analyzer needs no quota. Add a PlantNet API key for higher accuracy (free 500/day).
 
 ## Security Checklist
 
 - [ ] Strong JWT secret (32+ characters)
 - [ ] Environment variables secured
 - [ ] HTTPS enforced in production
-- [ ] Rate limiting enabled
+- [ ] Rate limiting enabled (300 req/15min by default)
 - [ ] Input validation implemented
-- [ ] SQL injection prevention
-- [ ] Password hashing with bcrypt
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] Password hashing with bcrypt (12 rounds)
 
 ## Troubleshooting
 
@@ -148,31 +136,27 @@ expo build:ios
 
 **Backend won't start:**
 - Check environment variables
-- Verify Supabase connection
-- Check Railway logs
+- Verify port 3000 is free
+- Check server logs
 
 **Frontend can't connect:**
-- Verify API URL in .env
-- Check CORS settings
-- Test API endpoints manually
+- If you used a separate backend host, verify `EXPO_PUBLIC_API_BASE_URL`
+- For the single-origin deployment, make sure `plantea-frontend/dist` exists (run `expo export --platform web`)
 
 **Scanner not working:**
-- Verify PlantNet API key
-- Check image format (base64)
-- Monitor API usage limits
+- Works out of the box via the built-in analyzer
+- For better accuracy add `PLANTNET_API_KEY`
+- Check image format (base64 PNG/JPEG)
 
 **Database errors:**
-- Check Supabase connection
-- Verify table schema
-- Review query syntax
+- Delete `data/plantea.db` to reset to fresh demo seeds (the app recreates it on start)
 
 ## Support
 
 For deployment issues:
-1. Check Railway/Supabase status pages
-2. Review application logs
-3. Test API endpoints with Postman
-4. Contact team for assistance
+1. Review application logs
+2. Test API endpoints with Postman
+3. Contact team for assistance
 
 ---
 

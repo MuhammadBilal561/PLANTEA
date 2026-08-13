@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, RefreshContr
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
+import Badge from '../../components/ui/Badge';
 
 export default function WishlistScreen({ navigation }) {
   const [wishlist, setWishlist] = useState([]);
@@ -84,13 +87,9 @@ export default function WishlistScreen({ navigation }) {
             <Text style={styles.plantSeller} numberOfLines={1}>{item.seller_name || 'Seller'}</Text>
             <Text style={styles.plantPrice}>Rs. {item.price_pkr}</Text>
             {item.stock_quantity > 0 ? (
-              <View style={styles.stockBadge}>
-                <Text style={styles.stockText}>In Stock</Text>
-              </View>
+              <Badge label="In Stock" tone="green" />
             ) : (
-              <View style={[styles.stockBadge, { backgroundColor: COLORS.red }]}>
-                <Text style={styles.stockText}>Out of Stock</Text>
-              </View>
+              <Badge label="Out of Stock" tone="red" />
             )}
           </View>
         </TouchableOpacity>
@@ -99,7 +98,7 @@ export default function WishlistScreen({ navigation }) {
           style={styles.removeButton}
           onPress={() => handleRemove(item.plant_id)}
         >
-          <Text style={styles.removeIcon}>♡</Text>
+          <Icon name="heart" size={18} color={COLORS.red} />
         </TouchableOpacity>
       </View>
     );
@@ -117,7 +116,7 @@ export default function WishlistScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Wishlist</Text>
         <View style={{ width: 40 }} />
@@ -137,17 +136,13 @@ export default function WishlistScreen({ navigation }) {
           />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyEmoji}>♡</Text>
-            <Text style={styles.emptyText}>Your wishlist is empty</Text>
-            <Text style={styles.emptySubtext}>Save plants you love to buy later</Text>
-            <TouchableOpacity
-              style={styles.browseButton}
-              onPress={() => navigation.navigate('Home')}
-            >
-              <Text style={styles.browseButtonText}>Browse Plants</Text>
-            </TouchableOpacity>
-          </View>
+          <EmptyState
+            icon="heart"
+            title="Your wishlist is empty"
+            message="Save plants you love to buy later."
+            actionLabel="Browse Plants"
+            onAction={() => navigation.navigate('Home')}
+          />
         }
       />
     </View>
@@ -176,10 +171,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     width: 40,
-  },
-  backText: {
-    fontSize: 28,
-    color: COLORS.white,
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,
@@ -239,19 +230,6 @@ const styles = StyleSheet.create({
     color: COLORS.p700,
     marginTop: 6,
   },
-  stockBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.p700,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: RADII.chip,
-    marginTop: 6,
-  },
-  stockText: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 10,
-    color: COLORS.white,
-  },
   removeButton: {
     position: 'absolute',
     top: 12,
@@ -263,41 +241,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.card,
-  },
-  removeIcon: {
-    fontSize: 20,
-    color: COLORS.red,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 80,
-  },
-  emptyEmoji: {
-    fontSize: 80,
-    marginBottom: 20,
-    color: COLORS.t4,
-  },
-  emptyText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 20,
-    color: COLORS.t1,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontFamily: FONTS.nunito,
-    fontSize: 14,
-    color: COLORS.t3,
-    marginBottom: 30,
-  },
-  browseButton: {
-    backgroundColor: COLORS.p700,
-    paddingHorizontal: 30,
-    paddingVertical: 14,
-    borderRadius: RADII.btn,
-  },
-  browseButtonText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 15,
-    color: COLORS.white,
   },
 });

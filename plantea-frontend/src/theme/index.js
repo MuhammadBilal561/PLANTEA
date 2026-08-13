@@ -18,12 +18,34 @@ export const COLORS = {
   t2:   '#3D5448',
   t3:   '#7A9487',
   t4:   '#B5CAC0',
+  // semantic
+  info: '#2F6FED',
+  success: '#1E9E5A',
+  warning: '#E5A32F',
+  danger: '#E5493A',
+  overlay: 'rgba(11, 46, 26, 0.55)',
+  border: '#E6EDE8',
+  divider: '#EDF2EE',
+  star: '#F5B731',
+  verified: '#1E9E5A',
+};
+
+export const SPACING = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 28,
 };
 
 export const RADII = {
+  xs: 6,
+  sm: 10,
   card: 20,
   btn: 14,
   chip: 50,
+  full: 999,
 };
 
 export const SHADOWS = {
@@ -51,3 +73,14 @@ export const FONTS = {
   nunitoBold: 'Nunito_700Bold',
   nunitoExtraBold: 'Nunito_800ExtraBold',
 };
+
+// Reusable gradient pairs for plant cards / hero sections
+export const GRADIENTS = {
+  mint: ['#E8F5E9', '#C8E6C9'],
+  lavender: ['#F3F0FF', '#DDD6FE'],
+  sky: ['#E0F2FE', '#BAE6FD'],
+  peach: ['#FFF7ED', '#FED7AA'],
+  hero: ['#0B2E1A', '#276044'],
+};
+
+export const GRADIENT_CYCLE = [GRADIENTS.mint, GRADIENTS.lavender, GRADIENTS.sky, GRADIENTS.peach];

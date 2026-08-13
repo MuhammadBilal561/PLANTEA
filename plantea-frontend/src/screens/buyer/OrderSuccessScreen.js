@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, FONTS, RADII } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function OrderSuccessScreen({ navigation, route }) {
   const order = route.params?.order;
   const plant = route.params?.plant;
+  const orders = route.params?.orders || (order ? [order] : []);
   const orderId = order?.id ? `#PLT-${order.id.slice(0, 8).toUpperCase()}` : '#PLT-??????';
   const plantName = plant?.name || order?.plant?.name || 'Your Plant';
+
+  // Clear the cart after a successful multi-item checkout.
+  useEffect(() => {
+    if (orders.length > 0) {
+      AsyncStorage.removeItem('plantea_cart').catch(() => {});
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.checkCircle}>
-        <Text style={styles.checkIcon}>✓</Text>
+        <Icon name="check" size={48} color={COLORS.white} />
       </View>
 
-      <Text style={styles.title}>Order Placed! 🎉</Text>
+      <Text style={styles.title}>Order Placed!</Text>
       <Text style={styles.subtitle}>
-        {plantName} is confirmed.{'\n'}A rider will be assigned shortly.
+        {orders.length > 1 ? `${orders.length} orders confirmed.` : `${plantName} is confirmed.`}
+        {'\n'}A rider will be assigned shortly.
       </Text>
 
       <View style={styles.orderIdBox}>
@@ -33,14 +44,16 @@ export default function OrderSuccessScreen({ navigation, route }) {
         style={styles.trackBtn}
         onPress={() => navigation.navigate('OrderTracking')}
       >
-        <Text style={styles.trackBtnText}>📍 Track My Order</Text>
+        <Icon name="map-pin" size={16} color={COLORS.white} />
+        <Text style={styles.trackBtnText}>Track My Order</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.continueBtn}
         onPress={() => navigation.navigate('BuyerTabs')}
       >
-        <Text style={styles.continueBtnText}>Continue Shopping 🌿</Text>
+        <Icon name="leaf" size={16} color={COLORS.p700} />
+        <Text style={styles.continueBtnText}>Continue Shopping</Text>
       </TouchableOpacity>
     </View>
   );
@@ -68,7 +81,6 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 10,
   },
-  checkIcon: { fontSize: 48, color: COLORS.white },
   title: {
     fontFamily: FONTS.soraExtraBold,
     fontSize: 26,
@@ -127,6 +139,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: RADII.btn,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
     marginBottom: 12,
   },
   trackBtnText: {
@@ -139,6 +154,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: RADII.btn,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
     borderWidth: 2,
     borderColor: COLORS.p200,
   },

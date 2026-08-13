@@ -2,46 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-toast-message';
-import { supabase } from '../../lib/supabaseClient';
+import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
-// Must match your Supabase Storage bucket name. In your Supabase screenshot it's `plant-images`.
-const PLANT_IMAGES_BUCKET = 'plant-images';
-
-const guessFileExt = (uri) => {
-  const m = (uri || '').match(/\.([a-zA-Z0-9]+)(\?|#|$)/);
-  return (m?.[1] || 'jpg').toLowerCase();
-};
-
-const guessContentType = (ext) => {
+const guessContentType = (uri) => {
+  const ext = (uri || '').match(/\.([a-zA-Z0-9]+)(\?|#|$)/)?.[1]?.toLowerCase();
   if (ext === 'png') return 'image/png';
   if (ext === 'webp') return 'image/webp';
   return 'image/jpeg';
 };
 
-const uploadImageToSupabase = async ({ userId, imageAsset }) => {
-  if (!imageAsset?.uri) return null;
-
-  // Works on Expo Web + newer RN fetch runtimes.
-  const res = await fetch(imageAsset.uri);
-  const blob = await res.blob();
-  const ext = guessFileExt(imageAsset.uri);
-  const contentType = guessContentType(ext);
-
-  const filePath = `${userId}/${Date.now()}.${ext}`;
-  const { error: uploadError } = await supabase.storage
-    .from(PLANT_IMAGES_BUCKET)
-    .upload(filePath, blob, {
-      contentType,
-      upsert: true,
-    });
-  if (uploadError) throw uploadError;
-
-  const { data: publicData } = supabase.storage
-    .from(PLANT_IMAGES_BUCKET)
-    .getPublicUrl(filePath);
-
-  return publicData?.publicUrl ?? null;
+const uploadImage = async ({ imageAsset }) => {
+  if (!imageAsset?.base64) return null;
+  const contentType = guessContentType(imageAsset.uri);
+  const response = await ApiService.uploadImage(imageAsset.base64, contentType);
+  if (response.success && response.data?.url) {
+    return ApiService.absoluteUrl(response.data.url);
+  }
+  return null;
 };
 
 export default function AddPlantListingScreen({ navigation, route }) {
@@ -112,20 +91,9 @@ export default function AddPlantListingScreen({ navigation, route }) {
 
     setLoading(true);
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) throw userError;
-      if (!user) throw new Error('You must be logged in to list a plant');
-
-      const coverImageUrl = image
-        ? await uploadImageToSupabase({ userId: user.id, imageAsset: image })
-        : null;
+      const imageUrl = image ? await uploadImage({ imageAsset: image }) : null;
 
       const insertPayload = {
-        seller_id: user.id,
         name: name.trim(),
         scientific_name: scientificName.trim() || null,
         description: description.trim(),
@@ -133,12 +101,13 @@ export default function AddPlantListingScreen({ navigation, route }) {
         stock_quantity: parseInt(quantity, 10),
         category,
         city,
-        cover_image_url: coverImageUrl,
-        is_ai_verified: isAiVerified,
+        image_url: imageUrl,
+        ai_verified: isAiVerified,
+        health_score: isAiVerified && aiScore ? Math.round(aiScore * 100) : null,
       };
 
-      const { error: insertError } = await supabase.from('plants').insert(insertPayload);
-      if (insertError) throw insertError;
+      const response = await ApiService.createPlant(insertPayload);
+      if (!response.success) throw new Error(response.message || 'Failed to list plant');
 
       Toast.show({
         type: 'success',
@@ -161,11 +130,11 @@ export default function AddPlantListingScreen({ navigation, route }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.t1} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Plant Listing</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.closeText}>✕</Text>
+          <Icon name="x" size={22} color={COLORS.t3} />
         </TouchableOpacity>
       </View>
 
@@ -175,7 +144,7 @@ export default function AddPlantListingScreen({ navigation, route }) {
             <Image source={{ uri: image.uri }} style={styles.imagePreview} />
           ) : (
             <View style={styles.imagePickerEmpty}>
-              <Text style={styles.cameraIcon}>📷</Text>
+              <Icon name="camera" size={36} color={COLORS.p400} />
               <Text style={styles.imagePickerText}>Tap to add photo</Text>
             </View>
           )}
@@ -310,7 +279,8 @@ export default function AddPlantListingScreen({ navigation, route }) {
 
 {isAiVerified && (
             <View style={styles.aiBadgeActive}>
-              <Text style={styles.aiBadgeActiveText}>✨ AI Verified ({(aiScore * 100).toFixed(0)}% Match)</Text>
+              <Icon name="check-circle" size={14} color={COLORS.p700} />
+              <Text style={styles.aiBadgeActiveText}>AI Verified ({(aiScore * 100).toFixed(0)}% Match)</Text>
             </View>
           )}
           <TouchableOpacity
@@ -352,18 +322,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
   },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
-  },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,
     fontSize: 22,
     color: COLORS.t1,
-  },
-  closeText: {
-    fontSize: 24,
-    color: COLORS.t3,
   },
   content: {
     flex: 1,
@@ -384,10 +346,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  cameraIcon: {
-    fontSize: 48,
-    marginBottom: 8,
   },
   imagePickerText: {
     fontFamily: FONTS.nunito,
@@ -478,12 +436,15 @@ const styles = StyleSheet.create({
     color: COLORS.p700,
   },
   aiBadgeActive: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: 'rgba(58, 140, 98, 0.1)',
     borderWidth: 1,
     borderColor: COLORS.p700,
     borderRadius: RADII.btn,
     paddingVertical: 12,
-    alignItems: 'center',
     marginBottom: 10,
   },
   aiBadgeActiveText: {

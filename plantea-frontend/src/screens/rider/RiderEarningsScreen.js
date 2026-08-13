@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabaseClient';
+import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function RiderEarningsScreen({ navigation }) {
   const { user } = useAuth();
@@ -20,32 +21,17 @@ export default function RiderEarningsScreen({ navigation }) {
 
   const loadEarnings = async () => {
     try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!authUser) throw new Error('Not logged in');
+      const response = await ApiService.getOrders();
+      if (!response.success) throw new Error('Failed to load earnings');
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select(
-          `
-          id, status, delivery_fee_pkr, placed_at, created_at,
-          buyer:profiles!buyer_id (id, full_name)
-        `
-        )
-        .eq('rider_id', authUser.id)
-        .eq('status', 'delivered')
-        .order('placed_at', { ascending: false });
-
-      if (error) throw error;
-
-      const normalized = (data || []).map((row) => ({
+      const delivered = (response.data.orders || []).filter(o => o.status === 'delivered');
+      const normalized = delivered.map((row) => ({
         ...row,
-        order_id: row.id,
-        buyer_name: row.buyer?.full_name,
-        created_at: row.placed_at || row.created_at,
+        order_id: row.order_id || row.id,
+        buyer_name: row.buyer_name,
+        created_at: row.created_at,
+        delivery_fee_pkr: row.delivery_fee_pkr,
+        plant_name: row.plant_name,
       }));
 
       setDeliveries(normalized);
@@ -85,7 +71,7 @@ export default function RiderEarningsScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Earnings</Text>
         <View style={{ width: 24 }} />
@@ -152,10 +138,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.org,
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,

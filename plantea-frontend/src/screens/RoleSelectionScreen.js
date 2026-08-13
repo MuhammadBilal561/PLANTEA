@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { COLORS, RADII, SHADOWS, FONTS } from '../theme';
+import Icon from '../components/ui/Icon';
 
 export default function RoleSelectionScreen({ navigation }) {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -61,7 +62,7 @@ export default function RoleSelectionScreen({ navigation }) {
       id: 'buyer',
       title: 'Buyer',
       description: 'Browse and buy plants',
-      emoji: '🛒',
+      icon: 'shopping-cart',
       bgColor: '#EAF4FF',
       anim: card1Anim,
       opacity: card1Opacity,
@@ -70,7 +71,7 @@ export default function RoleSelectionScreen({ navigation }) {
       id: 'seller',
       title: 'Seller',
       description: 'Sell your plants online',
-      emoji: '🌱',
+      icon: 'leaf',
       bgColor: COLORS.p100,
       anim: card2Anim,
       opacity: card2Opacity,
@@ -79,7 +80,7 @@ export default function RoleSelectionScreen({ navigation }) {
       id: 'rider',
       title: 'Rider',
       description: 'Deliver orders and earn',
-      emoji: '🛵',
+      icon: 'truck',
       bgColor: '#FFF0E6',
       anim: card3Anim,
       opacity: card3Opacity,
@@ -124,7 +125,7 @@ export default function RoleSelectionScreen({ navigation }) {
                 activeOpacity={0.7}
               >
                 <View style={[styles.roleIcon, { backgroundColor: role.bgColor }]}>
-                  <Text style={styles.roleEmoji}>{role.emoji}</Text>
+                  <Icon name={role.icon} size={26} color={COLORS.p700} />
                 </View>
                 <View style={styles.roleText}>
                   <Text style={styles.roleTitle}>{role.title}</Text>
@@ -155,7 +156,7 @@ export default function RoleSelectionScreen({ navigation }) {
         <View style={styles.signInContainer}>
           <Text style={styles.signInText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.signInLink}>Sign In →</Text>
+            <Text style={styles.signInLink}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -211,9 +212,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  roleEmoji: {
-    fontSize: 26,
   },
   roleText: {
     flex: 1,

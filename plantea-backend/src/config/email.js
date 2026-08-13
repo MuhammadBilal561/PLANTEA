@@ -2,41 +2,51 @@
 // src/config/email.js
 // Plantea — Email Service Configuration
 // =============================================================
-// Responsibility: Configure and provide email sending functionality
-//   using nodemailer for OTP and notification emails.
-//
-// SE Principle — Configuration Separation:
-//   Email configuration is centralized here, making it easy to
-//   switch providers or update settings without touching business logic.
+// Responsibility: Send transactional emails (OTP codes) using
+//   nodemailer. If SMTP is not configured, email is gracefully
+//   skipped so the rest of the app keeps working (graceful
+//   degradation — the app must stay usable for a demo).
 // =============================================================
 
 const nodemailer = require('nodemailer');
 const logger = require('../utils/logger');
 
-// Create reusable transporter object using SMTP transport
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const smtpConfigured = Boolean(
+  process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
+);
+
+// Create a lazy transporter only when SMTP is configured.
+let transporter = null;
+function getTransporter() {
+  if (!smtpConfigured) return null;
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: parseInt(process.env.SMTP_PORT) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+  return transporter;
+}
 
 /**
  * Send an email using the configured transporter.
- * 
- * @param {object} options - Email options
- * @param {string} options.to - Recipient email address
- * @param {string} options.subject - Email subject
- * @param {string} options.html - HTML body (optional)
- * @param {string} options.text - Plain text body
- * @returns {Promise<object>} - Nodemailer send result
+ * Throws a descriptive error when SMTP is not configured.
  */
 const sendEmail = async ({ to, subject, html, text }) => {
+  const t = getTransporter();
+  if (!t) {
+    const err = new Error('SMTP not configured');
+    err.code = 'NO_SMTP';
+    throw err;
+  }
+
   try {
-    const info = await transporter.sendMail({
+    const info = await t.sendMail({
       from: process.env.SMTP_FROM || 'Plantea <noreply@plantea.pk>',
       to,
       subject,

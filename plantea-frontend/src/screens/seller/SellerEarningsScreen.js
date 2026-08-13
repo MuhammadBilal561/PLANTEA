@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function SellerEarningsScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
@@ -80,7 +81,7 @@ export default function SellerEarningsScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Earnings</Text>
         <View style={{ width: 24 }} />
@@ -163,10 +164,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,

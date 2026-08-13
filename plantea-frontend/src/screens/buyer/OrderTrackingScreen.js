@@ -6,6 +6,8 @@ import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 import MarketplaceService from '../../services/marketplace';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
 
 const { width } = Dimensions.get('window');
 
@@ -121,14 +123,18 @@ export default function OrderTrackingScreen({ navigation }) {
 
         {item.delivery_address && (
           <View style={styles.addressContainer}>
-            <Text style={styles.addressLabel}>📍 Delivery Address:</Text>
+            <View style={styles.addressLabelRow}>
+              <Icon name="map-pin" size={12} color={COLORS.t2} />
+              <Text style={styles.addressLabel}>Delivery Address:</Text>
+            </View>
             <Text style={styles.addressText} numberOfLines={2}>{item.delivery_address}</Text>
           </View>
         )}
 
         {item.status === 'delivered' && (
           <View style={styles.deliveredBanner}>
-            <Text style={styles.deliveredText}>✓ Delivered Successfully</Text>
+            <Icon name="check-circle" size={15} color={COLORS.white} />
+            <Text style={styles.deliveredText}>Delivered Successfully</Text>
           </View>
         )}
         
@@ -137,7 +143,8 @@ export default function OrderTrackingScreen({ navigation }) {
             style={styles.trackBtn} 
             onPress={() => setSelectedOrder(item)}
           >
-            <Text style={styles.trackBtnText}>Track Order 📍</Text>
+            <Icon name="map-pin" size={15} color={COLORS.p700} />
+            <Text style={styles.trackBtnText}>Track Order</Text>
           </TouchableOpacity>
         )}
       </TouchableOpacity>
@@ -186,11 +193,15 @@ export default function OrderTrackingScreen({ navigation }) {
           >
             {/* Rider Marker */}
             <Marker coordinate={{ latitude: 31.485, longitude: 74.305 }}>
-              <Text style={{ fontSize: 32 }}>🛵</Text>
+              <View style={styles.markerPill}>
+                <Icon name="truck" size={16} color={COLORS.white} />
+              </View>
             </Marker>
             {/* Destination Marker */}
             <Marker coordinate={{ latitude: 31.475, longitude: 74.298 }}>
-              <Text style={{ fontSize: 32 }}>📍</Text>
+              <View style={styles.markerPill}>
+                <Icon name="map-pin" size={16} color={COLORS.white} />
+              </View>
             </Marker>
             <Polyline 
               coordinates={[
@@ -203,13 +214,13 @@ export default function OrderTrackingScreen({ navigation }) {
           </MapView>
 
           <TouchableOpacity style={styles.mapBackBtn} onPress={() => setSelectedOrder(null)}>
-            <Text style={styles.mapBackText}>←</Text>
+            <Icon name="arrow-left" size={20} color={COLORS.t1} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.trkBody}>
           <View style={styles.trkStatus}>
-            <View style={styles.trkIc}><Text style={{ color: '#fff', fontSize: 22 }}>📦</Text></View>
+            <View style={styles.trkIc}><Icon name="package" size={22} color={COLORS.white} /></View>
             <View>
               <Text style={styles.trkStitle}>Order #{selectedOrder.order_id?.slice(0,6) || '10293'}</Text>
               <Text style={styles.trkSsub}>Estimated Delivery: 15 mins</Text>
@@ -219,7 +230,7 @@ export default function OrderTrackingScreen({ navigation }) {
           <View style={styles.trkSteps}>
             <View style={styles.step}>
               <View style={[styles.stepD, styles.now]}>
-                <Text style={{color:'#fff', fontSize: 10}}>✓</Text>
+                <Icon name="check" size={12} color={COLORS.white} />
               </View>
               <View>
                 <Text style={styles.stepT}>Rider is on the way</Text>
@@ -228,7 +239,7 @@ export default function OrderTrackingScreen({ navigation }) {
             </View>
             <View style={styles.step}>
               <View style={[styles.stepD, !isTransit && styles.pnd]}>
-                <Text style={{color:'#fff', fontSize: 10}}>{isTransit ? '✓' : ''}</Text>
+                {isTransit ? <Icon name="check" size={12} color={COLORS.white} /> : null}
               </View>
               <View>
                 <Text style={styles.stepT}>Order Picked Up</Text>
@@ -237,7 +248,7 @@ export default function OrderTrackingScreen({ navigation }) {
             </View>
             <View style={styles.step}>
               <View style={styles.stepD}>
-                <Text style={{color:'#fff', fontSize: 10}}>✓</Text>
+                <Icon name="check" size={12} color={COLORS.white} />
               </View>
               <View>
                 <Text style={styles.stepT}>Order Confirmed</Text>
@@ -283,11 +294,11 @@ export default function OrderTrackingScreen({ navigation }) {
           />
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyEmoji}>📦</Text>
-            <Text style={styles.emptyText}>No orders yet</Text>
-            <Text style={styles.emptySubtext}>Start shopping to see your orders here</Text>
-          </View>
+          <EmptyState
+            icon="package"
+            title="No orders yet"
+            message="Start shopping to see your orders here."
+          />
         }
       />
     </View>
@@ -431,11 +442,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 4,
   },
+  addressLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
   addressLabel: {
     fontFamily: FONTS.nunitoBold,
     fontSize: 11,
     color: COLORS.t2,
-    marginBottom: 4,
   },
   addressText: {
     fontFamily: FONTS.nunito,
@@ -449,30 +465,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   deliveredText: {
     fontFamily: FONTS.soraBold,
     fontSize: 13,
     color: COLORS.white,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 18,
-    color: COLORS.t1,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontFamily: FONTS.nunito,
-    fontSize: 14,
-    color: COLORS.t3,
   },
   trackBtn: {
     backgroundColor: COLORS.p50,
@@ -480,11 +480,22 @@ const styles = StyleSheet.create({
     borderRadius: RADII.btn,
     marginTop: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   trackBtnText: {
     fontFamily: FONTS.soraBold,
     color: COLORS.p700,
     fontSize: 13,
+  },
+  markerPill: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: COLORS.p700,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mapContainer: {
     height: 330,
@@ -506,10 +517,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.card,
-  },
-  mapBackText: {
-    fontSize: 20,
-    color: COLORS.t1,
   },
   trkBody: {
     flex: 1,

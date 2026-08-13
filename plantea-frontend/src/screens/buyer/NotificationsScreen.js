@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator }
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII } from '../../theme';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
 
 export default function NotificationsScreen({ navigation }) {
   const [notifications, setNotifications] = useState([]);
@@ -48,10 +50,13 @@ export default function NotificationsScreen({ navigation }) {
 
   const getNotificationIcon = (type) => {
     const icons = {
-      order_placed: '📦',
-      order_confirmed: '✅',
-      order_delivered: '🌿',
-      default: '🔔',
+      order_placed: 'package',
+      order_confirmed: 'check-circle',
+      order_delivered: 'leaf',
+      review_received: 'star',
+      order_rider_assigned: 'truck',
+      order_cancelled: 'x-circle',
+      default: 'bell',
     };
     return icons[type] || icons.default;
   };
@@ -81,9 +86,7 @@ export default function NotificationsScreen({ navigation }) {
       activeOpacity={0.7}
     >
       <View style={styles.notificationIcon}>
-        <Text style={styles.notificationIconText}>
-          {getNotificationIcon(item.type)}
-        </Text>
+        <Icon name={getNotificationIcon(item.type)} size={20} color={COLORS.p700} />
       </View>
       <View style={styles.notificationContent}>
         <Text style={styles.notificationTitle}>{item.title}</Text>
@@ -107,7 +110,7 @@ export default function NotificationsScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         <TouchableOpacity onPress={handleMarkAllRead}>
@@ -123,13 +126,11 @@ export default function NotificationsScreen({ navigation }) {
           contentContainerStyle={styles.listContent}
         />
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🔔</Text>
-          <Text style={styles.emptyTitle}>No notifications yet</Text>
-          <Text style={styles.emptySubtitle}>
-            We'll notify you when something important happens
-          </Text>
-        </View>
+        <EmptyState
+          icon="bell"
+          title="No notifications yet"
+          message="We'll notify you when something important happens."
+        />
       )}
     </View>
   );
@@ -155,10 +156,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,
@@ -194,9 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  notificationIconText: {
-    fontSize: 20,
-  },
   notificationContent: {
     flex: 1,
   },
@@ -217,28 +211,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.t4,
     marginTop: 6,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyIcon: {
-    fontSize: 60,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontFamily: FONTS.soraExtraBold,
-    fontSize: 16,
-    color: COLORS.t1,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontFamily: FONTS.nunito,
-    fontSize: 14,
-    color: COLORS.t3,
-    textAlign: 'center',
-    lineHeight: 20,
   },
 });

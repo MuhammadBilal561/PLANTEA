@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, RADII, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function OtpVerifyScreen({ navigation, route }) {
   const email = route.params?.email || '';
@@ -157,7 +158,7 @@ export default function OtpVerifyScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>←</Text>
+        <Icon name="arrow-left" size={24} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -229,10 +230,6 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     marginBottom: 20,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
   },
   content: {
     flex: 1,

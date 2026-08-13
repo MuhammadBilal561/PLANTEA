@@ -6,7 +6,7 @@ import MapView, { Marker } from '../../components/NativeMap';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabaseClient';
+import ApiService from '../../services/api';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
 const { width } = Dimensions.get('window');
@@ -41,64 +41,17 @@ export default function RiderDashboardScreen() {
   const loadData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!authUser) throw new Error('Not logged in');
-
-      const [availableQ, myQ] = await Promise.all([
-        supabase
-          .from('orders')
-          .select(
-            `
-            id, status, delivery_fee_pkr, placed_at, created_at,
-            delivery_address_snapshot,
-            seller:profiles!seller_id (id, full_name, city),
-            items:order_items (
-              id, plant_name_snapshot,
-              plant:plants!plant_id (id, name, city)
-            )
-          `
-          )
-          .eq('status', 'seller_confirmed')
-          .is('rider_id', null)
-          .order('placed_at', { ascending: false }),
-
-        supabase
-          .from('orders')
-          .select(
-            `
-            id, status, delivery_fee_pkr, placed_at, created_at,
-            delivery_address_snapshot,
-            buyer:profiles!buyer_id (id, full_name, phone),
-            items:order_items (
-              id, plant_name_snapshot,
-              plant:plants!plant_id (id, name, city)
-            )
-          `
-          )
-          .eq('rider_id', authUser.id)
-          .order('placed_at', { ascending: false }),
+      const [availableRes, myRes] = await Promise.all([
+        ApiService.getAvailableOrders(),
+        ApiService.getOrders(),
       ]);
 
-      if (availableQ.error) throw availableQ.error;
-      if (myQ.error) throw myQ.error;
+      if (!availableRes.success || !myRes.success) {
+        throw new Error('Failed to load deliveries');
+      }
 
-      const normalize = (row) => ({
-        ...row,
-        order_id: row.id,
-        created_at: row.placed_at || row.created_at,
-        plant_name: row.items?.[0]?.plant_name_snapshot || row.items?.[0]?.plant?.name,
-        seller_city: row.seller?.city,
-        buyer_name: row.buyer?.full_name,
-        buyer_phone: row.buyer?.phone,
-        delivery_address: row.delivery_address_snapshot?.address_line1 || row.delivery_address_snapshot?.address_line2 || row.delivery_address_snapshot?.city,
-      });
-
-      const available = (availableQ.data || []).map(normalize);
-      const mineAll = (myQ.data || []).map(normalize);
+      const available = availableRes.data || [];
+      const mineAll = myRes.data.orders || [];
       const mineActive = mineAll.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
 
       setAvailableOrders(available);
@@ -138,18 +91,8 @@ export default function RiderDashboardScreen() {
 
   const handleAcceptOrder = async (orderId) => {
     try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!authUser) throw new Error('Not logged in');
-
-      const { error } = await supabase
-        .from('orders')
-        .update({ rider_id: authUser.id, status: 'assigned_rider' })
-        .eq('id', orderId);
-      if (error) throw error;
+      const response = await ApiService.assignRider(orderId);
+      if (!response.success) throw new Error(response.message || 'Failed to accept order');
 
       Toast.show({
         type: 'success',
@@ -168,11 +111,8 @@ export default function RiderDashboardScreen() {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus, delivered_at: newStatus === 'delivered' ? new Date().toISOString() : null })
-        .eq('id', orderId);
-      if (error) throw error;
+      const response = await ApiService.updateOrderStatus(orderId, newStatus);
+      if (!response.success) throw new Error(response.message || 'Failed to update status');
 
       Toast.show({
         type: 'success',
@@ -191,10 +131,10 @@ export default function RiderDashboardScreen() {
 
   const getStatusBadgeStyle = (status) => {
     const styles = {
-  seller_confirmed: { bg: '#3498DB', text: 'Confirmed' },
-  assigned_rider: { bg: COLORS.org, text: 'Assigned' },
+  confirmed: { bg: '#3498DB', text: 'Confirmed' },
       picked_up: { bg: '#9B59B6', text: 'Picked Up' },
       in_transit: { bg: COLORS.org, text: 'In Transit' },
+      delivered: { bg: COLORS.p700, text: 'Delivered' },
     };
     return styles[status] || { bg: COLORS.t4, text: status };
   };
@@ -236,7 +176,7 @@ export default function RiderDashboardScreen() {
           <Text style={styles.statusBadgeText}>{badge.text}</Text>
         </View>
 
-  {item.status === 'assigned_rider' && (
+  {item.status === 'confirmed' && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleUpdateStatus(item.order_id, 'picked_up')}

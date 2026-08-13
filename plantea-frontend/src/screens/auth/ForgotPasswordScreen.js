@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import Toast from 'react-native-toast-message';
 import ApiService from '../../services/api';
 import { COLORS, RADII, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -71,12 +72,12 @@ export default function ForgotPasswordScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>←</Text>
+        <Icon name="arrow-left" size={24} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
         <View style={styles.illustration}>
-          <Text style={styles.illustrationIcon}>🔐</Text>
+          <Icon name="lock" size={34} color={COLORS.p700} />
         </View>
 
         <Text style={styles.title}>Forgot Password?</Text>
@@ -144,10 +145,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
-  },
   content: {
     flex: 1,
   },
@@ -160,9 +157,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginBottom: 24,
-  },
-  illustrationIcon: {
-    fontSize: 48,
   },
   title: {
     fontFamily: FONTS.soraExtraBold,

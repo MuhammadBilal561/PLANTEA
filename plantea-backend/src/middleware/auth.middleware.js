@@ -19,8 +19,15 @@ const jwt = require('jsonwebtoken');
 const ApiResponse = require('../utils/ApiResponse');
 const logger = require('../utils/logger');
 
+// Short-lived cache of { userId → {isActive, role} } to avoid a DB read on
+// every request while still catching deactivated/deleted accounts quickly.
+const userStateCache = new Map();
+const USER_CACHE_TTL_MS = 60 * 1000;
+const { get } = require('../config/db');
+
 /**
  * Middleware: Verify JWT token on every protected route.
+ * Verifies the signature AND that the user still exists and is active.
  * Attaches decoded user object to req.user for downstream use.
  */
 const verifyToken = (req, res, next) => {
@@ -33,20 +40,37 @@ const verifyToken = (req, res, next) => {
     return ApiResponse.error(res, 'Access denied. Please log in first.', 401);
   }
 
+  let decoded;
   try {
     // Verify signature and decode payload
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Attach decoded user info to the request object
-    // Downstream controllers can now read req.user.id, req.user.role
-    req.user = decoded;
-    next();
-
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     // Token expired or tampered with
     logger.warn('Invalid or expired token', err.message);
     return ApiResponse.error(res, 'Session expired. Please log in again.', 401);
   }
+
+  // Confirm the user still exists and is active (fresh or cached)
+  const cached = userStateCache.get(decoded.id);
+  if (cached && Date.now() - cached.timestamp < USER_CACHE_TTL_MS) {
+    if (!cached.isActive) {
+      return ApiResponse.error(res, 'Your account has been deactivated.', 403);
+    }
+    req.user = { ...decoded, role: cached.role };
+    return next();
+  }
+
+  const user = get('SELECT id, role, is_active FROM users WHERE id = ?', [decoded.id]);
+  if (!user) {
+    return ApiResponse.error(res, 'Account no longer exists. Please log in again.', 401);
+  }
+  if (!user.is_active) {
+    userStateCache.set(decoded.id, { isActive: false, role: user.role, timestamp: Date.now() });
+    return ApiResponse.error(res, 'Your account has been deactivated.', 403);
+  }
+  userStateCache.set(decoded.id, { isActive: true, role: user.role, timestamp: Date.now() });
+  req.user = { ...decoded, role: user.role };
+  next();
 };
 
 /**

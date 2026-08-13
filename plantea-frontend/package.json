@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:web": "expo export --platform web"
   },
   "dependencies": {
     "@expo-google-fonts/nunito": "^0.2.3",
@@ -16,7 +17,6 @@
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
-    "@supabase/supabase-js": "^2.105.3",
     "expo": "54.0.6",
     "expo-auth-session": "~7.0.11",
     "expo-camera": "~17.0.10",

@@ -11,6 +11,9 @@ const { verifyToken } = require('../../middleware/auth.middleware');
 
 const router = Router();
 
+// Public seller profile lookup (used for seller pages) — before auth middleware
+router.get('/:id/public', usersController.getPublicProfile);
+
 // All user routes require authentication
 router.use(verifyToken);
 

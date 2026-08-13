@@ -19,15 +19,16 @@ CS 3rd Semester | Dr. Syed Khaldoon Khurshid
 
 Plantea is a three-sided mobile marketplace connecting **Buyers**, **Sellers**, and **Riders** in Pakistan's plant ecosystem. This repository contains the **Node.js REST API backend** that powers the React Native mobile application.
 
-**Live Backend URL:** `https://your-railway-url.up.railway.app`
-**Health Check:** `https://your-railway-url.up.railway.app/health`
+The backend is **100% self-contained and free**: it uses SQLite (via better-sqlite3) stored in a local file, so there is **no Supabase account, no cloud database, and no external service** required to run it. It can also serve the production web build of the frontend on the same origin.
+
+**Health Check:** `http://localhost:3000/health`
 
 ---
 
 ## Architecture
 
 ```
-React Native App (Frontend)
+React Native / Web App (Frontend)
         │  HTTPS Requests
         ▼
 ┌──────────────────────────────┐
@@ -38,17 +39,16 @@ React Native App (Frontend)
 │  │ Orders │ │   Scanner   │ │
 │  └────────┘ └─────────────┘ │
 └──────────────┬───────────────┘
-               │ Supabase Client
+               │ SQLite file
                ▼
 ┌──────────────────────────────┐
-│  Supabase (PostgreSQL)       │  ← Data Layer (Free Tier)
-│  6 Tables | 3NF Normalized   │
+│  SQLite (better-sqlite3)     │  ← Data Layer (free, self-contained)
+│  7 Tables | 3NF Normalized   │
 └──────────────────────────────┘
-               │ HTTP
+               │ HTTP (optional)
                ▼
 ┌──────────────────────────────┐
-│  PlantNet API                │  ← AI Plant Identification
-│  500 free scans/day          │
+│  PlantNet API (optional)     │  ← AI Plant Identification
 └──────────────────────────────┘
 ```
 
@@ -58,11 +58,11 @@ React Native App (Frontend)
 
 | Layer | Technology | Cost |
 |-------|-----------|------|
-| Mobile Frontend | React Native | Free |
+| Mobile/Web Frontend | React Native (Expo) | Free |
 | Backend API | Node.js + Express | Free |
-| Database | Supabase (PostgreSQL) | Free |
-| Backend Hosting | Railway.com | Free |
-| AI Scanner | PlantNet API | Free (500/day) |
+| Database | SQLite (better-sqlite3) | Free |
+| Image Uploads | Self-hosted (`/uploads/*`) | Free |
+| AI Scanner | Built-in analyzer (+ optional PlantNet) | Free |
 | **Total** | | **Rs. 0 / month** |
 
 ---
@@ -71,102 +71,71 @@ React Native App (Frontend)
 
 - Node.js v18 or higher
 - npm v9 or higher
-- Supabase account (free tier) — supabase.com
-- PlantNet API key — my.plantnet.org (free)
-- Railway account — railway.app (free)
+- Nothing else — no external accounts required
 
 ---
 
 ## Local Setup Instructions
 
-### 1. Clone the repository
+### 1. Install dependencies
 ```bash
-git clone https://github.com/zaini789/Plantea-app.git
-cd Plantea-app
-```
-
-### 2. Install dependencies
-```bash
+cd plantea-backend
 npm install
 ```
 
-### 3. Configure environment variables
+### 2. Configure environment variables
 ```bash
 cp .env.example .env
 ```
-Open `.env` and fill in:
+The defaults are fine for local development. Optional values (leave blank to use built-in fallbacks):
 ```
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key-here
+PORT=3000
 JWT_SECRET=any_long_random_string_here
-PLANTNET_API_KEY=your-plantnet-key-here
-COMMISSION_FREE_TIER=10
-COMMISSION_PAID_TIER=5
-DEFAULT_DELIVERY_FEE=150
+PLANTNET_API_KEY=            # optional: real AI identification
+SMTP_HOST=                   # optional: real reset emails
+SMTP_USER=                   # optional: real reset emails
+SMTP_PASS=                   # optional: real reset emails
+DEFAULT_DELIVERY_FEE=0       # free delivery platform
+COMMISSION_PERCENT=0         # 100% free marketplace
 NODE_ENV=development
 ```
 
-### 4. Set up the database
-1. Go to Supabase dashboard
-2. Open SQL Editor → New Query
-3. Copy everything from `database/schema.sql`
-4. Paste and click Run → should say "Success"
-5. Then run this extra line separately:
-```sql
-ALTER TABLE users ADD COLUMN password_hash TEXT NOT NULL DEFAULT '';
-```
-
-### 5. Start the server
+### 3. Start the server
 ```bash
 npm run dev
 ```
 
-### 6. Verify it works
+The SQLite database (`data/plantea.db`) and demo seed data are created automatically on first start.
+
+### 4. Verify it works
 Open browser:
 ```
 http://localhost:3000/health
 ```
-Should return `"status": "OK"` ✅
+Should return `"status": "OK"`
+
+### Demo Accounts (all password `Test1234`)
+| Role   | Email             |
+|--------|-------------------|
+| Buyer  | shehroz@test.com  |
+| Seller | zainab@test.com   |
+| Rider  | bilal@test.com    |
 
 ---
 
-## Railway Deployment (Live Hosting)
+## Serving the Frontend (single origin)
 
-### 1. Push latest code to main
+Build the Expo web bundle once, then the backend serves the app + API together:
+
 ```bash
-git checkout main
-git merge dev
-git push origin main
-git checkout dev
+cd ../plantea-frontend
+npx expo export --platform web
+
+cd ../plantea-backend
+node server.js
 ```
 
-### 2. Deploy on Railway
-1. Go to railway.app → Login with GitHub
-2. Click New Project → Deploy from GitHub repo
-3. Select `zaini789/Plantea-app` → select `main` branch
-4. Click Deploy Now → wait 2-3 minutes
-
-### 3. Add environment variables
-Railway → your project → Variables tab → Raw Editor:
-```
-SUPABASE_URL=your_value
-SUPABASE_SERVICE_KEY=your_value
-JWT_SECRET=your_value
-PLANTNET_API_KEY=your_value
-COMMISSION_FREE_TIER=10
-COMMISSION_PAID_TIER=5
-DEFAULT_DELIVERY_FEE=150
-NODE_ENV=production
-```
-Click Update Variables → Railway redeploys automatically.
-
-### 4. Generate your live URL
-Railway → Settings → Domains → Generate Domain
-
-### 5. Verify live deployment
-```
-https://your-railway-url.up.railway.app/health
-```
+Open `http://localhost:3000` — the app loads and talks to `/api/*` on the same origin (no CORS, no proxy). To rebuild after frontend changes, re-run the `expo export` step and restart the server.
 
 ---
 
@@ -177,25 +146,30 @@ https://your-railway-url.up.railway.app/health
 |--------|----------|--------|-------------|
 | POST | `/api/auth/register` | Public | Register new user |
 | POST | `/api/auth/login` | Public | Login, get JWT token |
-| GET | `/api/auth/me` | 🔒 Any | Get my profile |
+| GET | `/api/auth/me` | Protected | Get JWT payload |
+| GET | `/api/users/profile` | Protected | Get full profile |
+| PATCH | `/api/users/profile` | Protected | Update profile |
+| POST | `/api/auth/forgot-password` | Public | Send reset OTP |
+| POST | `/api/auth/verify-otp` | Public | Verify OTP, get reset token |
+| POST | `/api/auth/reset-password` | Public | Set new password |
 
 ### Plants
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| GET | `/api/plants` | Public | Browse marketplace |
+| GET | `/api/plants` | Public | Browse marketplace (filters: search, category, city, seller) |
 | GET | `/api/plants/:id` | Public | View plant detail |
-| GET | `/api/plants/my/listings` | 🔒 Seller | My listings |
-| POST | `/api/plants` | 🔒 Seller | Create listing |
-| PATCH | `/api/plants/:id` | 🔒 Seller | Update listing |
-| DELETE | `/api/plants/:id` | 🔒 Seller | Remove listing |
+| GET | `/api/plants/my/listings` | Protected | My listings |
+| POST | `/api/plants` | Seller | Create listing |
+| PATCH | `/api/plants/:id` | Seller | Update listing |
+| DELETE | `/api/plants/:id` | Seller | Remove listing |
 
 ### Orders
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/orders` | 🔒 Buyer | Place order |
-| GET | `/api/orders` | 🔒 Any | My orders |
-| PATCH | `/api/orders/:id/status` | 🔒 Seller/Rider | Update status |
-| PATCH | `/api/orders/:id/assign-rider` | 🔒 Rider | Accept delivery |
+| POST | `/api/orders` | Buyer | Place order |
+| GET | `/api/orders` | Protected | My orders (role-filtered) |
+| PATCH | `/api/orders/:id/status` | Seller/Rider | Update status |
+| PATCH | `/api/orders/:id/assign-rider` | Rider | Accept delivery |
 
 **Order status flow:**
 ```
@@ -206,10 +180,24 @@ in_transit → delivered (rider)
 pending or confirmed → cancelled (buyer or seller)
 ```
 
+### Wishlist / Notifications / Payments
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET/POST/DELETE | `/api/wishlist` | Buyer | Saved plants |
+| GET | `/api/notifications` | Protected | My notifications |
+| PATCH | `/api/notifications/read-all` | Protected | Mark all read |
+| GET | `/api/payments/methods` | Public | Available methods (COD, EasyPaisa) |
+
 ### AI Scanner
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/scanner/identify` | 🔒 Any | Identify plant from image |
+| POST | `/api/scanner/identify` | Protected | Identify plant from image |
+
+### Uploads
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/uploads` | Protected | Upload image (base64) → `/uploads/<file>` |
+| GET | `/uploads/*` | Public | Serve uploaded images |
 
 ### Health Check
 | Method | Endpoint | Access | Description |
@@ -268,26 +256,32 @@ Value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
 **AI Scanner:**
 ```json
 {
-  "image_base64": "base64_string_here",
-  "plant_id": "optional_uuid"
+  "image_base64": "base64_string_here"
 }
 ```
-To get base64: go to base64.guru/converter/encode/image → upload plant photo → copy result.
+
+**Image Upload:**
+```json
+{
+  "image_base64": "base64_string_here"
+}
+```
 
 ---
 
-## Database Schema (6 Tables)
+## Database Schema (7 Tables)
 
 | Table | Purpose |
 |-------|---------|
 | `users` | All buyers, sellers, riders |
-| `plants` | Plant listings |
-| `orders` | Order lifecycle + commission |
-| `subscriptions` | Seller plans (free/starter) |
-| `reviews` | Buyer reviews |
-| `scan_logs` | AI scanner history |
+| `plants` | Plant listings with AI health score |
+| `orders` | Order lifecycle (commission always 0) |
+| `reviews` | Buyer feedback |
+| `scan_logs` | AI scanner audit trail |
+| `wishlists` | Buyer saved plants |
+| `notifications` | In-app alerts |
 
-Full schema: `database/schema.sql`
+Source of truth: `src/config/db.js` (creates the SQLite schema + seed data automatically).
 
 ---
 
@@ -298,24 +292,24 @@ Full schema: `database/schema.sql`
 | Response Time | < 2s | `X-Response-Time` header on every response |
 | Error Rate | < 1% | `/health` endpoint → `total_errors_this_session` |
 | AI Scanner Speed | < 5s | 10s timeout in scanner.service.js |
-| Uptime | 99% | Railway + Supabase dashboard |
+| Uptime | 99% | uptime_seconds on `/health` |
 
 ---
 
 ## Folder Structure
 
 ```
-Plantea-app/
-├── server.js                         ← App entry point
-├── Procfile                          ← Railway deployment config
+plantea-backend/
+├── server.js                         ← App entry point (API + optional static frontend)
 ├── .env.example                      ← Environment variable template
-├── .gitignore                        ← Excludes node_modules + .env
+├── .gitignore                        ← Excludes node_modules, .env, uploads, data
 ├── package.json
-├── database/
-│   └── schema.sql                    ← All 6 tables + seed data
+├── data/
+│   └── plantea.db                    ← SQLite database (auto-created)
+├── uploads/                          ← Self-hosted plant images (auto-created)
 └── src/
     ├── config/
-    │   └── supabase.js               ← Shared DB client (singleton)
+    │   └── db.js                     ← SQLite schema + seeds (source of truth)
     ├── middleware/
     │   ├── auth.middleware.js        ← JWT verify + role guard
     │   ├── error.middleware.js       ← Global error handler + error count metric
@@ -324,10 +318,15 @@ Plantea-app/
     │   ├── ApiResponse.js            ← Standardized response format
     │   └── logger.js                 ← Structured logging (INFO/WARN/ERROR)
     └── modules/
-        ├── auth/                     ← Register, login, JWT
+        ├── auth/                     ← Register, login, OTP reset, JWT
+        ├── users/                    ← Profile management
         ├── plants/                   ← Listing CRUD
-        ├── orders/                   ← Order lifecycle + commission
-        └── scanner/                  ← PlantNet AI integration
+        ├── orders/                   ← Order lifecycle + rider assignment
+        ├── scanner/                  ← Built-in plant analyzer + optional PlantNet
+        ├── wishlist/                 ← Buyer saved plants
+        ├── notifications/            ← In-app alerts
+        ├── payment/                  ← Payment methods
+        └── uploads/                  ← Self-hosted image uploads
 ```
 
 ---
@@ -335,7 +334,7 @@ Plantea-app/
 ## Git Workflow
 
 ```
-main        ← stable, deployed to Railway
+main        ← stable
   └── dev   ← team integration branch
         ├── bilal
         ├── saddique
@@ -355,7 +354,8 @@ main        ← stable, deployed to Railway
 
 | Bug | Error | Fix |
 |-----|-------|-----|
-| Register failing | 500 Internal Server Error | Added `password_hash` column to users table in Supabase |
-| Plants list empty | Returns 0 results | Fixed stock filter `.eq(0)` → `.gt(0)` in plants.service.js |
-| Scanner rejected | 403 Forbidden | Added required `organs: leaf` field to PlantNet request |
-| Scanner rejected | 401 Unauthorized | Removed duplicate API key from URL, kept only in params |
+| Register failing | 500 Internal Server Error | Rewrote auth to SQLite with `password_hash` column |
+| Plants search broken | `ILIKE` not supported | Switched to `LOWER(...) LIKE LOWER(?)` |
+| Plants list empty | Supabase `.eq(0)` filter | Removed stock filter, list returns in-stock plants |
+| Scanner returned fake results | Hardcoded "Monstera Deliciosa" | Rebuilt with real pixel analysis + local knowledge base |
+| Image uploads broke | Supabase Storage removed | Self-hosted base64 uploads to `/uploads/*` |

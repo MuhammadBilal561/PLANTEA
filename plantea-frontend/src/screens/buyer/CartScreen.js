@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
 
 export default function CartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);
@@ -49,17 +51,17 @@ export default function CartScreen({ navigation }) {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backText}>←</Text>
+            <Icon name="arrow-left" size={24} color={COLORS.p700} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Cart</Text>
         </View>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🛒</Text>
-          <Text style={styles.emptyTitle}>Your cart is empty</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.emptyLink}>Browse plants →</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon="shopping-bag"
+          title="Your cart is empty"
+          message="Plants you add will appear here ready for checkout."
+          actionLabel="Browse plants"
+          onAction={() => navigation.navigate('Home')}
+        />
       </View>
     );
   }
@@ -68,7 +70,7 @@ export default function CartScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Cart</Text>
       </View>
@@ -106,7 +108,7 @@ export default function CartScreen({ navigation }) {
               style={styles.deleteButton}
               onPress={() => removeItem(item.plant.plant_id)}
             >
-              <Text style={styles.deleteIcon}>🗑</Text>
+              <Icon name="trash-2" size={20} color={COLORS.danger} />
             </TouchableOpacity>
           </View>
         ))}
@@ -150,11 +152,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
-    marginRight: 16,
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,
@@ -232,30 +229,6 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: 8,
-  },
-  deleteIcon: {
-    fontSize: 20,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyIcon: {
-    fontSize: 80,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontFamily: FONTS.soraExtraBold,
-    fontSize: 18,
-    color: COLORS.t1,
-    marginBottom: 12,
-  },
-  emptyLink: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 14,
-    color: COLORS.p700,
   },
   bottomSummary: {
     position: 'absolute',

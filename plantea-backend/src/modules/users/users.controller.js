@@ -30,12 +30,15 @@ const getProfile = async (req, res, next) => {
  */
 const updateProfile = async (req, res, next) => {
   try {
-    const { full_name, phone, city } = req.body;
+    const { full_name, phone, city, bio, address, avatar_url } = req.body;
     
     const updatedUser = await usersService.updateUserProfile(req.user.id, {
       full_name,
       phone,
       city,
+      bio,
+      address,
+      avatar_url,
     });
     
     return ApiResponse.success(res, updatedUser, 'Profile updated successfully');
@@ -45,4 +48,17 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { getProfile, updateProfile };
+/**
+ * GET /api/users/:id/public
+ * Public seller profile — no email/phone exposed.
+ */
+const getPublicProfile = async (req, res, next) => {
+  try {
+    const user = await usersService.getPublicProfile(req.params.id);
+    return ApiResponse.success(res, { user }, 'Public profile fetched successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getProfile, updateProfile, getPublicProfile };

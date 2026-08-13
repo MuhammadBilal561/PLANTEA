@@ -94,11 +94,10 @@ EXPO_PUBLIC_API_TIMEOUT=10000
 ```
 PORT=3000
 NODE_ENV=development
-SUPABASE_URL=your-supabase-url
-SUPABASE_SERVICE_KEY=your-service-key
 JWT_SECRET=your-jwt-secret
-PLANTNET_API_KEY=your-plantnet-key
+PLANTNET_API_KEY=            # optional
 ```
+The database is SQLite and auto-created on first start — no Supabase account needed.
 
 ## 📦 Key Features Implemented
 

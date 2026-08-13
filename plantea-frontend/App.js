@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +8,7 @@ import { Nunito_400Regular, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-go
 import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { COLORS } from './src/theme';
+import { Icon } from './src/components/ui';
 import ErrorBoundary from './ErrorBoundary';
 
 import SplashScreen from './src/screens/SplashScreen';
@@ -30,6 +31,7 @@ import OrderSummaryScreen from './src/screens/buyer/OrderSummaryScreen';
 import OrderSuccessScreen from './src/screens/buyer/OrderSuccessScreen';
 import ScanResultScreen from './src/screens/buyer/ScanResultScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SellerProfileScreen from './src/screens/buyer/SellerProfileScreen';
 
 import SellerDashboardScreen from './src/screens/seller/SellerDashboardScreen';
 import AddPlantListingScreen from './src/screens/seller/AddPlantListingScreen';
@@ -66,6 +68,7 @@ const BuyerStackNavigator = () => (
     <BuyerStack.Screen name="Cart" component={CartScreen} />
     <BuyerStack.Screen name="Notifications" component={NotificationsScreen} />
     <BuyerStack.Screen name="Wishlist" component={WishlistScreen} />
+    <BuyerStack.Screen name="SellerProfile" component={SellerProfileScreen} />
   </BuyerStack.Navigator>
 );
 
@@ -95,7 +98,7 @@ const BuyerTabs = () => (
       component={HomeScreen}
       options={{
         tabBarLabel: 'Home',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏠</Text>,
+        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -103,7 +106,7 @@ const BuyerTabs = () => (
       component={SearchScreen}
       options={{
         tabBarLabel: 'Search',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🔍</Text>,
+        tabBarIcon: ({ color }) => <Icon name="search" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -111,7 +114,7 @@ const BuyerTabs = () => (
       component={AiScannerScreen}
       options={{
         tabBarLabel: 'Scanner',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📷</Text>,
+        tabBarIcon: ({ color }) => <Icon name="camera" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -119,7 +122,7 @@ const BuyerTabs = () => (
       component={OrderTrackingScreen}
       options={{
         tabBarLabel: 'Orders',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📦</Text>,
+        tabBarIcon: ({ color }) => <Icon name="package" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -127,7 +130,7 @@ const BuyerTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
+        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
       }}
     />
   </Tab.Navigator>
@@ -159,7 +162,7 @@ const SellerTabs = () => (
       component={SellerDashboardScreen}
       options={{
         tabBarLabel: 'Dashboard',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏠</Text>,
+        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -167,7 +170,7 @@ const SellerTabs = () => (
       component={AddPlantListingScreen}
       options={{
         tabBarLabel: 'Add Plant',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>➕</Text>,
+        tabBarIcon: ({ color }) => <Icon name="plus-circle" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -175,7 +178,7 @@ const SellerTabs = () => (
       component={SellerEarningsScreen}
       options={{
         tabBarLabel: 'Earnings',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>💰</Text>,
+        tabBarIcon: ({ color }) => <Icon name="trending-up" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -183,10 +186,20 @@ const SellerTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
+        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
       }}
     />
   </Tab.Navigator>
+);
+
+const SellerStack = createNativeStackNavigator();
+
+const SellerStackNavigator = () => (
+  <SellerStack.Navigator screenOptions={{ headerShown: false }}>
+    <SellerStack.Screen name="SellerTabs" component={SellerTabs} />
+    <SellerStack.Screen name="AiScanner" component={AiScannerScreen} />
+    <SellerStack.Screen name="ScanResult" component={ScanResultScreen} />
+  </SellerStack.Navigator>
 );
 
 const RiderTabs = () => (
@@ -215,7 +228,7 @@ const RiderTabs = () => (
       component={RiderDashboardScreen}
       options={{
         tabBarLabel: 'Dashboard',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏍️</Text>,
+        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -223,7 +236,7 @@ const RiderTabs = () => (
       component={RiderEarningsScreen}
       options={{
         tabBarLabel: 'Earnings',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>💰</Text>,
+        tabBarIcon: ({ color }) => <Icon name="trending-up" size={22} color={color} />,
       }}
     />
     <Tab.Screen
@@ -231,7 +244,7 @@ const RiderTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
+        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
       }}
     />
   </Tab.Navigator>
@@ -255,7 +268,7 @@ const RootNavigator = () => {
   ) : effectiveUser?.role === 'buyer' ? (
         <Stack.Screen name="BuyerApp" component={BuyerStackNavigator} />
   ) : effectiveUser?.role === 'seller' ? (
-        <Stack.Screen name="SellerApp" component={SellerTabs} />
+        <Stack.Screen name="SellerApp" component={SellerStackNavigator} />
   ) : effectiveUser?.role === 'rider' ? (
         <Stack.Screen name="RiderApp" component={RiderTabs} />
       ) : (

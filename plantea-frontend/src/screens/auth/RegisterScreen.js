@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Activi
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, RADII, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function RegisterScreen({ navigation, route }) {
   const { register } = useAuth();
@@ -123,7 +124,7 @@ export default function RegisterScreen({ navigation, route }) {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.t1} />
         </TouchableOpacity>
 
         <View style={styles.header}>
@@ -234,7 +235,7 @@ export default function RegisterScreen({ navigation, route }) {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeButton}
               >
-                <Text style={styles.eyeIcon}>{showPassword ? '👁' : '👁'}</Text>
+                <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
               </TouchableOpacity>
             </View>
             {passwordStrength && (
@@ -273,7 +274,7 @@ export default function RegisterScreen({ navigation, route }) {
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={styles.eyeButton}
               >
-                <Text style={styles.eyeIcon}>{showConfirmPassword ? '👁' : '👁'}</Text>
+                <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
               </TouchableOpacity>
             </View>
             {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
@@ -326,7 +327,7 @@ export default function RegisterScreen({ navigation, route }) {
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Sign In →</Text>
+              <Text style={styles.loginLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -350,10 +351,6 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     marginBottom: 10,
-  },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
   },
   header: {
     marginBottom: 24,
@@ -411,15 +408,6 @@ const styles = StyleSheet.create({
   },
   eyeButton: {
     padding: 14,
-  },
-  eyeIcon: {
-    fontSize: 18,
-  },
-  errorText: {
-    fontFamily: FONTS.nunito,
-    fontSize: 12,
-    color: COLORS.red,
-    marginTop: 4,
   },
   strengthContainer: {
     marginTop: 6,

@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ActivityIndicator, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
+import ApiService from '../../services/api';
 import { COLORS, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 export default function AiScannerScreen({ navigation, route }) {
   const [permission, requestPermission] = useCameraPermissions();
+  const [capturing, setCapturing] = useState(false);
+  const [flashOn, setFlashOn] = useState(false);
+  const cameraRef = useRef(null);
   const scanLineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -26,6 +32,81 @@ export default function AiScannerScreen({ navigation, route }) {
     ).start();
   }, []);
 
+  const runScan = async (base64, imageUri) => {
+    setCapturing(true);
+    try {
+      const response = await ApiService.identifyPlant(base64);
+      if (!response.success) {
+        throw new Error(response.message || 'Identification failed');
+      }
+
+      const scanResult = response.data;
+      const returnTo = route?.params?.returnTo;
+
+      // When returning to a form (e.g. Add Plant Listing), pass back the details.
+      if (returnTo) {
+        navigation.navigate(returnTo, {
+          aiScanned: true,
+          aiScore: (scanResult.confidence || 0) / 100,
+          plantName: scanResult.identifiedName,
+          scientificName: scanResult.scientificName,
+        });
+        return;
+      }
+
+      navigation.navigate('ScanResult', { scanResult, imageUri });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Scan Failed',
+        text2: error.message || 'Could not identify the plant',
+      });
+    } finally {
+      setCapturing(false);
+    }
+  };
+
+  const handleCapture = async () => {
+    if (capturing) return;
+    try {
+      if (cameraRef.current) {
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+          quality: 0.7,
+        });
+        await runScan(photo.base64, photo.uri);
+      }
+    } catch (error) {
+      console.error('Capture failed:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Camera Error',
+        text2: 'Could not capture photo. Try the gallery instead.',
+      });
+    }
+  };
+
+  const handleGallery = async () => {
+    if (capturing) return;
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        base64: true,
+      });
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        await runScan(asset.base64, asset.uri);
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Gallery Error',
+        text2: 'Could not open the gallery',
+      });
+    }
+  };
+
   if (!permission) {
     return <View />;
   }
@@ -33,74 +114,60 @@ export default function AiScannerScreen({ navigation, route }) {
   if (!permission.granted) {
     return (
       <View style={styles.container}>
-        <Text style={styles.scTip}>We need your permission to show the camera</Text>
-        <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
-          <Text style={styles.permBtnText}>Grant Permission</Text>
-        </TouchableOpacity>
+        <View style={styles.permissionBox}>
+          <View style={styles.permissionIconCircle}>
+            <Icon name="camera" size={32} color={COLORS.p400} />
+          </View>
+          <Text style={styles.scTip}>We need camera access to scan your plant.</Text>
+          <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
+            <Text style={styles.permBtnText}>Grant Permission</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.galleryBtn} onPress={handleGallery}>
+            <Text style={styles.galleryBtnText}>Use photo from gallery instead</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
-  const handleScan = () => {
-    // Mocking the scan result
-    Toast.show({
-      type: 'success',
-      text1: 'Scanning...',
-      text2: 'Analyzing plant features',
-    });
-    
-    // Simulate API delay then show success
-    setTimeout(() => {
-      Toast.show({
-        type: 'success',
-        text1: 'Plant Identified!',
-        text2: 'Monstera Deliciosa',
-      });
-      
-      const returnTo = route?.params?.returnTo;
-      if (returnTo) {
-        navigation.navigate(returnTo, {
-          aiScanned: true,
-          aiScore: 0.85,
-          plantName: 'Monstera',
-          scientificName: 'Monstera deliciosa'
-        });
-      } else {
-        navigation.goBack();
-      }
-    }, 2000);
-  };
-
   const translateY = scanLineAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-150, 150] // Moves the scan line up and down inside the box
+    outputRange: [-150, 150],
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.scHdr}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={{color: '#fff', fontSize: 24}}>←</Text>
+          <Icon name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.scHdrT}>Plant Scanner</Text>
-        <View style={{width: 24}} />
+        <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.camContainer}>
-        <CameraView style={styles.camera} facing="back">
+        <CameraView style={styles.camera} facing="back" ref={cameraRef} enableTorch={flashOn}>
           <View style={styles.overlay}>
             <View style={[styles.corner, styles.tl]} />
             <View style={[styles.corner, styles.tr]} />
             <View style={[styles.corner, styles.bl]} />
             <View style={[styles.corner, styles.br]} />
-            
+
             <Animated.View style={[styles.scanLineWrapper, { transform: [{ translateY }] }]}>
-              <LinearGradient 
-                colors={['transparent', COLORS.p400, 'transparent']} 
-                start={{x: 0, y: 0}} end={{x: 1, y: 0}} 
-                style={styles.scLine} 
+              <LinearGradient
+                colors={['transparent', COLORS.p400, 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.scLine}
               />
             </Animated.View>
+
+            {capturing && (
+              <View style={styles.capturingOverlay}>
+                <ActivityIndicator size="large" color={COLORS.p400} />
+                <Text style={styles.capturingText}>Analyzing plant…</Text>
+              </View>
+            )}
           </View>
         </CameraView>
       </View>
@@ -109,20 +176,20 @@ export default function AiScannerScreen({ navigation, route }) {
 
       <View style={styles.scBot}>
         <View style={styles.scOpts}>
-          <TouchableOpacity style={styles.scOpt}>
-            <Text style={styles.optIcon}>🖼️</Text>
+          <TouchableOpacity style={styles.scOpt} onPress={handleGallery} disabled={capturing}>
+            <Icon name="image" size={24} color="rgba(255,255,255,0.7)" />
             <Text style={styles.optText}>Gallery</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.shutterContainer} onPress={handleScan} activeOpacity={0.8}>
-            <View style={styles.shutter}>
-              <Text style={styles.shutterIcon}>📷</Text>
+
+          <TouchableOpacity style={styles.shutterContainer} onPress={handleCapture} activeOpacity={0.8} disabled={capturing}>
+            <View style={[styles.shutter, capturing && styles.shutterDisabled]}>
+              <Icon name="camera" size={28} color="#fff" />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.scOpt}>
-            <Text style={styles.optIcon}>💡</Text>
-            <Text style={styles.optText}>Flash</Text>
+          <TouchableOpacity style={styles.scOpt} onPress={() => setFlashOn(v => !v)} disabled={capturing}>
+            <Icon name={flashOn ? 'zap' : 'zap-off'} size={24} color="rgba(255,255,255,0.7)" />
+            <Text style={styles.optText}>{flashOn ? 'On' : 'Flash'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -135,6 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0A0F0B',
     flexDirection: 'column',
+    justifyContent: 'center',
   },
   scHdr: {
     paddingTop: 62,
@@ -172,30 +240,10 @@ const styles = StyleSheet.create({
     height: 50,
     borderColor: COLORS.p400,
   },
-  tl: {
-    top: '20%',
-    left: '15%',
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-  },
-  tr: {
-    top: '20%',
-    right: '15%',
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-  },
-  bl: {
-    bottom: '20%',
-    left: '15%',
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-  },
-  br: {
-    bottom: '20%',
-    right: '15%',
-    borderBottomWidth: 3,
-    borderRightWidth: 3,
-  },
+  tl: { top: '20%', left: '15%', borderTopWidth: 3, borderLeftWidth: 3 },
+  tr: { top: '20%', right: '15%', borderTopWidth: 3, borderRightWidth: 3 },
+  bl: { bottom: '20%', left: '15%', borderBottomWidth: 3, borderLeftWidth: 3 },
+  br: { bottom: '20%', right: '15%', borderBottomWidth: 3, borderRightWidth: 3 },
   scanLineWrapper: {
     position: 'absolute',
     width: '70%',
@@ -204,6 +252,18 @@ const styles = StyleSheet.create({
   scLine: {
     width: '100%',
     height: '100%',
+  },
+  capturingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  capturingText: {
+    color: '#fff',
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 14,
+    marginTop: 12,
   },
   scTip: {
     color: 'rgba(255,255,255,0.55)',
@@ -234,8 +294,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  shutterIcon: {
-    fontSize: 28,
+  shutterDisabled: {
+    backgroundColor: COLORS.t4,
   },
   scOpts: {
     flexDirection: 'row',
@@ -248,22 +308,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  optIcon: {
-    fontSize: 22,
-  },
   optText: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: 11,
     fontFamily: FONTS.nunitoBold,
   },
+  permissionBox: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  permissionIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(82,168,125,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   permBtn: {
     backgroundColor: COLORS.p700,
-    padding: 14,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
     borderRadius: 12,
     marginTop: 20,
   },
   permBtnText: {
     color: '#fff',
     fontFamily: FONTS.soraBold,
-  }
+  },
+  galleryBtn: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  galleryBtnText: {
+    color: COLORS.p400,
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 13,
+  },
 });

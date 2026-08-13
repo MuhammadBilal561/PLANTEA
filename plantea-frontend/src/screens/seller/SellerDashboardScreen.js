@@ -1,17 +1,19 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabaseClient';
+import ApiService from '../../services/api';
+import { Icon, Badge, Rating } from '../../components/ui';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
 export default function SellerDashboardScreen() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [listings, setListings] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const inFlightRef = useRef(false);
   const [selectedFilter, setSelectedFilter] = useState('All');
@@ -19,7 +21,7 @@ export default function SellerDashboardScreen() {
     weeklyEarnings: 0,
     totalOrders: 0,
     activeListings: 0,
-    rating: 4.8,
+    rating: 0,
   });
 
   const filters = ['All', 'Pending', 'Confirmed', 'Picked Up', 'Delivered'];
@@ -28,7 +30,7 @@ export default function SellerDashboardScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-      
+
       // Real-time order sync (polling)
       pollInterval.current = setInterval(() => {
         loadData(false); // Silent reload
@@ -53,58 +55,46 @@ export default function SellerDashboardScreen() {
 
   if (showLoading) setLoading(true);
     try {
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!authUser) throw new Error('Not logged in');
-
-      const [ordersQuery, listingsQuery] = await Promise.all([
-        supabase
-          .from('orders')
-          .select(
-            `
-            id, status, total_pkr, placed_at, created_at,
-            buyer:profiles!buyer_id (id, full_name, phone),
-            items:order_items (
-              id, plant_id, plant_name_snapshot, unit_price_pkr, quantity, line_total_pkr,
-              plant:plants!plant_id (id, name, cover_image_url, city, price_pkr)
-            )
-          `
-          )
-          .eq('seller_id', authUser.id)
-          .order('placed_at', { ascending: false }),
-        supabase
-          .from('plants')
-          .select('id, name, price_pkr, stock_quantity, is_available, city, category, cover_image_url, created_at')
-          .eq('seller_id', authUser.id)
-          .order('created_at', { ascending: false }),
+      const [ordersRes, listingsRes, analyticsRes] = await Promise.all([
+        ApiService.getOrders(),
+        ApiService.getMyListings(),
+        ApiService.getSellerAnalytics(),
       ]);
 
-      if (ordersQuery.error) throw ordersQuery.error;
-      if (listingsQuery.error) throw listingsQuery.error;
+      if (!ordersRes.success || !listingsRes.success) {
+        throw new Error('Failed to load dashboard data');
+      }
 
-      const normalizedOrders = (ordersQuery.data || []).map((row) => ({
+      const orders = ordersRes.data.orders || [];
+      const listings = listingsRes.data.plants || [];
+
+      const normalizedOrders = orders.map((row) => ({
         ...row,
-        order_id: row.id,
-        created_at: row.placed_at || row.created_at,
-        buyer_name: row.buyer?.full_name,
-        buyer_phone: row.buyer?.phone,
-        plant_name: row.items?.[0]?.plant_name_snapshot || row.items?.[0]?.plant?.name,
-        plant_image: row.items?.[0]?.plant?.cover_image_url || null,
-        price_at_order: row.items?.[0]?.unit_price_pkr,
-        total_amount: row.total_pkr,
+        order_id: row.order_id || row.id,
+        created_at: row.created_at,
+        buyer_name: row.buyer_name,
+        buyer_phone: row.buyer_phone,
+        plant_name: row.plant_name,
+        plant_image: row.plant_image,
+        price_at_order: row.price_at_order,
+        total_amount: row.total_amount,
+        delivery_fee_pkr: row.delivery_fee_pkr,
       }));
 
-      const normalizedListings = (listingsQuery.data || []).map((row) => ({
+      const normalizedListings = listings.map((row) => ({
         ...row,
-        plant_id: row.id,
-        image_url: row.cover_image_url || null,
+        plant_id: row.plant_id || row.id,
+        image_url: ApiService.absoluteUrl(row.image_url),
       }));
   setOrders(normalizedOrders);
   setListings(normalizedListings);
-  calculateStats(normalizedOrders, normalizedListings.length);
+
+  if (analyticsRes.success) {
+    setAnalytics(analyticsRes.data);
+    calculateStatsFromAnalytics(analyticsRes.data, normalizedListings.length);
+  } else {
+    calculateStats(normalizedOrders, normalizedListings.length);
+  }
     } catch (error) {
       if (showLoading) {
         Toast.show({
@@ -120,6 +110,28 @@ export default function SellerDashboardScreen() {
     }
   };
 
+  const calculateStatsFromAnalytics = (analyticsData, listingsCountOverride) => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklyRevenue = (analyticsData.revenue_chart || [])
+      .filter((d) => new Date(d.date) >= sevenDaysAgo)
+      .reduce((sum, d) => sum + (Number(d.revenue) || 0), 0);
+
+    const avgRating = analyticsData.top_plants?.length
+      ? analyticsData.top_plants.reduce((sum, p) => sum + (Number(p.rating_avg) || 0), 0) / analyticsData.top_plants.length
+      : 0;
+
+    setStats({
+      weeklyEarnings: weeklyRevenue || analyticsData.totals?.revenue || 0,
+      totalOrders: analyticsData.totals?.total_orders || 0,
+      activeListings:
+        analyticsData.plant_summary?.active_listings != null
+          ? analyticsData.plant_summary.active_listings
+          : listingsCountOverride,
+      rating: avgRating,
+    });
+  };
+
   const calculateStats = (allOrders, listingsCountOverride) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -133,7 +145,7 @@ export default function SellerDashboardScreen() {
       totalOrders: allOrders.length,
       activeListings:
         typeof listingsCountOverride === 'number' ? listingsCountOverride : listings.length,
-      rating: 4.8,
+      rating: 0,
     });
   };
 
@@ -141,7 +153,7 @@ export default function SellerDashboardScreen() {
     if (selectedFilter === 'All') return orders;
     const statusMap = {
       'Pending': 'pending',
-  'Confirmed': 'seller_confirmed',
+  'Confirmed': 'confirmed',
       'Picked Up': 'picked_up',
       'Delivered': 'delivered',
     };
@@ -150,11 +162,8 @@ export default function SellerDashboardScreen() {
 
   const handleOrderAction = async (orderId, newStatus) => {
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
-      if (error) throw error;
+      const response = await ApiService.updateOrderStatus(orderId, newStatus);
+      if (!response.success) throw new Error(response.message || 'Failed to update order');
 
       Toast.show({
         type: 'success',
@@ -185,28 +194,38 @@ export default function SellerDashboardScreen() {
 
   const renderOrderCard = ({ item, index }) => {
     const badge = getStatusBadgeStyle(item.status);
-    
+
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).springify()} style={styles.orderCard}>
-        <Text style={styles.orderPlantName}>{item.plant_name || 'Plant'}</Text>
-        <Text style={styles.orderBuyerName}>Buyer: {item.buyer_name || 'Unknown'}</Text>
-        <Text style={styles.orderAmount}>Rs. {item.price_at_order || item.total_amount}</Text>
-        
-        <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
-          <Text style={styles.statusBadgeText}>{badge.text}</Text>
+        <View style={styles.orderTop}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.orderPlantName}>{item.plant_name || 'Plant'}</Text>
+            <Text style={styles.orderBuyerName}>Buyer: {item.buyer_name || 'Unknown'}</Text>
+          </View>
+          <Badge label={badge.text} tone={badgeTone(item.status)} />
         </View>
+        <Text style={styles.orderAmount}>Rs. {item.price_at_order || item.total_amount}</Text>
 
-    {item.status === 'placed' && (
+        {item.status === 'pending' && (
           <TouchableOpacity
             style={styles.actionButton}
-      onPress={() => handleOrderAction(item.order_id, 'seller_confirmed')}
+            onPress={() => handleOrderAction(item.order_id, 'confirmed')}
           >
-            <Text style={styles.actionButtonText}>✅ Confirm Order</Text>
+            <Text style={styles.actionButtonText}>Confirm Order</Text>
           </TouchableOpacity>
         )}
       </Animated.View>
     );
   };
+
+  const badgeTone = (status) => ({
+    pending: 'orange',
+    confirmed: 'blue',
+    picked_up: 'gold',
+    in_transit: 'neutral',
+    delivered: 'green',
+    cancelled: 'red',
+  }[status] || 'neutral');
 
   if (loading) {
     return (
@@ -229,7 +248,7 @@ export default function SellerDashboardScreen() {
         <View style={styles.statsGrid}>
           <Animated.View entering={ZoomIn.delay(100)} style={styles.statCard}>
             <Text style={styles.statValue}>Rs. {stats.weeklyEarnings}</Text>
-            <Text style={styles.statLabel}>Weekly Earnings</Text>
+            <Text style={styles.statLabel}>Revenue</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(200)} style={styles.statCard}>
             <Text style={styles.statValue}>{stats.totalOrders}</Text>
@@ -240,10 +259,36 @@ export default function SellerDashboardScreen() {
             <Text style={styles.statLabel}>Active Listings</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(400)} style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.rating} ⭐</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statValue}>{stats.rating ? stats.rating.toFixed(1) : '—'}</Text>
+            <Text style={styles.statLabel}>Avg Rating</Text>
           </Animated.View>
         </View>
+
+        {analytics?.top_plants?.length > 0 && (
+          <View style={styles.topPlantsSection}>
+            <Text style={styles.sectionTitle}>Top Plants</Text>
+            {analytics.top_plants.map((plant, i) => (
+              <View key={plant.id} style={styles.topPlantRow}>
+                <Text style={styles.rank}>#{i + 1}</Text>
+                {plant.image_url ? (
+                  <Image source={{ uri: ApiService.absoluteUrl(plant.image_url) }} style={styles.topPlantImage} resizeMode="cover" />
+                ) : (
+                  <LinearGradient colors={['#D6F0E2', '#A8DDB5']} style={styles.topPlantImage}>
+                    <Text style={styles.topPlantInitial}>{plant.name?.charAt(0)?.toUpperCase() || 'P'}</Text>
+                  </LinearGradient>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.topPlantName} numberOfLines={1}>{plant.name}</Text>
+                  <Rating rating={plant.rating_avg} size={10} showValue={false} count={plant.review_count} />
+                </View>
+                <View style={styles.topPlantStats}>
+                  <Text style={styles.topPlantSold}>{plant.sold_count || 0} sold</Text>
+                  <Text style={styles.topPlantViews}>{plant.views_count || 0} views</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         <ScrollView
           horizontal
@@ -349,6 +394,64 @@ const styles = StyleSheet.create({
   },
   filtersContent: {
     gap: 8,
+  },
+  topPlantsSection: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADII.card,
+    padding: 16,
+    marginBottom: 16,
+    ...SHADOWS.card,
+  },
+  sectionTitle: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 15,
+    color: COLORS.t1,
+    marginBottom: 12,
+  },
+  topPlantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  rank: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 13,
+    color: COLORS.t3,
+    width: 26,
+  },
+  topPlantImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topPlantInitial: {
+    fontFamily: FONTS.soraExtraBold,
+    fontSize: 16,
+    color: COLORS.p700,
+  },
+  topPlantName: {
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 13,
+    color: COLORS.t1,
+  },
+  topPlantStats: {
+    alignItems: 'flex-end',
+  },
+  topPlantSold: {
+    fontFamily: FONTS.nunitoBold,
+    fontSize: 11,
+    color: COLORS.p700,
+  },
+  topPlantViews: {
+    fontFamily: FONTS.nunito,
+    fontSize: 10,
+    color: COLORS.t3,
+    marginTop: 2,
   },
   filterChip: {
     backgroundColor: COLORS.white,

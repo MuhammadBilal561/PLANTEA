@@ -2,168 +2,95 @@
 // src/modules/auth/auth.service.js
 // Plantea — Authentication Business Logic
 // =============================================================
-// Responsibility: Handle user registration and login logic.
-//
-// SE Principle — Separation of Concerns (3-Layer Pattern):
-//   Service layer  → business logic lives here
-//   Controller     → handles HTTP request/response only
-//   Database       → Supabase handles storage
-//
-// Refactoring Note:
-//   Originally, all logic would sit in the controller (God Function
-//   code smell). Extracting into a service makes each piece
-//   independently testable and replaceable.
+// Responsibility: Register, login, forgot-password (OTP), reset.
+// Data access now goes through the SQLite layer (src/config/db).
 // =============================================================
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const supabase = require('../../config/supabase');
+const { db, get, run, uuid } = require('../../config/db');
 const logger = require('../../utils/logger');
 const { sendEmail } = require('../../config/email');
 
-// Number of salt rounds for bcrypt — 12 is the industry standard balance
-// between security and performance
 const SALT_ROUNDS = 12;
 
 
 /**
  * Register a new user (buyer, seller, or rider).
+ * The platform is 100% free — no subscription or commission
+ * records are created for new sellers.
  *
- * Steps:
- *  1. Check if email or phone is already registered
- *  2. Hash the password with bcrypt
- *  3. Insert user into Supabase users table
- *  4. If seller, create their default free subscription
- *  5. Return a signed JWT token
- *
- * @param {object} userData - { full_name, email, phone, password, role, city }
  * @returns {object} - { user, token }
  */
 const registerUser = async (userData) => {
   const { full_name, email, phone, password, role, city } = userData;
 
-  // Step 1: Check for duplicate email
-  const { data: existingUser } = await supabase
-    .from('users')
-    .select('id')
-    .eq('email', email)
-    .single();
-
-  if (existingUser) {
-    // Throw a structured error — controller will catch and respond
-    const err = new Error('An account with this email already exists.');
-    err.statusCode = 409; // Conflict
+  // Step 1: Reject duplicate email or phone
+  const existing = get('SELECT id FROM users WHERE email = ? OR phone = ?', [email, phone]);
+  if (existing) {
+    const err = new Error('An account with this email or phone already exists.');
+    err.statusCode = 409;
     throw err;
   }
 
-  // Step 2: Hash password — NEVER store plain text passwords
+  // Step 2: Hash password — NEVER store plain text
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // Step 3: Insert new user into the database
-  // Note: password_hash is a separate column not shown in schema above
-  // Supabase Auth can also handle this — here we do manual for full control
-  const { data: newUser, error: insertError } = await supabase
-    .from('users')
-    .insert({
-      full_name,
-      email,
-      phone,
-      password_hash: hashedPassword,
-      role,
-      city: city || 'Lahore',
-    })
-    .select('id, full_name, email, role, city, created_at')
-    .single();
+  // Step 3: Insert new user
+  const id = uuid();
+  run(
+    `INSERT INTO users (id, full_name, email, phone, password_hash, role, city)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [id, full_name, email, phone, hashedPassword, role, city || 'Lahore']
+  );
 
-  if (insertError) {
-    logger.error('Failed to insert new user', insertError.message);
-    const err = new Error('Registration failed. Please try again.');
-    err.statusCode = 500;
-    throw err;
-  }
+  const newUser = get(
+    'SELECT id, full_name, email, role, city, created_at FROM users WHERE id = ?',
+    [id]
+  );
 
-  // Step 4: If seller, create their default free subscription record
-  if (role === 'seller') {
-    const { error: subError } = await supabase
-      .from('subscriptions')
-      .insert({
-        seller_id: newUser.id,
-        tier: 'free',
-        commission_rate: parseFloat(process.env.COMMISSION_FREE_TIER) || 10.00,
-      });
-
-    if (subError) {
-      // Log but don't fail registration — subscription can be fixed later
-      logger.warn('Subscription creation failed for new seller', subError.message);
-    }
-  }
-
-  // Step 5: Generate JWT token — expires based on .env setting
+  // Step 4: Generate JWT
   const token = generateToken(newUser);
 
   logger.info(`New ${role} registered: ${email}`);
-
   return { user: newUser, token };
 };
 
 
 /**
  * Log in an existing user.
- *
- * Steps:
- *  1. Find user by email
- *  2. Compare submitted password with stored hash
- *  3. Return JWT token if valid
- *
- * @param {string} email
- * @param {string} password
  * @returns {object} - { user, token }
  */
 const loginUser = async (email, password) => {
+  const user = get(
+    'SELECT id, full_name, email, role, city, is_active, password_hash FROM users WHERE email = ?',
+    [email]
+  );
 
-  // Step 1: Fetch user by email, include password_hash for comparison
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('id, full_name, email, role, city, is_active, password_hash')
-    .eq('email', email)
-    .single();
-
-  // Use same error message for both "not found" and "wrong password"
-  // This prevents email enumeration attacks (attacker can't tell which one failed)
   const invalidCredentialsError = new Error('Invalid email or password.');
   invalidCredentialsError.statusCode = 401;
 
-  if (error || !user) throw invalidCredentialsError;
+  if (!user) throw invalidCredentialsError;
 
-  // Step 2: Check if account is active (not banned/disabled)
   if (!user.is_active) {
     const err = new Error('Your account has been deactivated. Please contact support.');
     err.statusCode = 403;
     throw err;
   }
 
-  // Step 3: Compare password
   const passwordMatches = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatches) throw invalidCredentialsError;
 
-  // Remove password hash from the response — never send to client
   delete user.password_hash;
-
-  // Step 4: Generate and return JWT
   const token = generateToken(user);
 
   logger.info(`User logged in: ${email} (${user.role})`);
-
   return { user, token };
 };
 
 
 /**
  * Internal helper: Generate a signed JWT token.
- * Extracted as a helper to avoid code duplication (DRY principle).
- *
- * @param {object} user - User object with id, role, email
- * @returns {string} - Signed JWT token
  */
 const generateToken = (user) => {
   return jwt.sign(
@@ -179,77 +106,38 @@ const generateToken = (user) => {
 
 
 /**
- * Forgot Password - Send OTP to user's email.
- * 
- * Steps:
- *  1. Check if user exists
- *  2. Rate limit check (max 3 attempts in 15 minutes)
- *  3. Generate 6-digit OTP
- *  4. Hash OTP and store in database
- *  5. Send OTP via email
- * 
- * @param {string} email - User's email address
- * @returns {object} - { message }
+ * Forgot Password — send a 6-digit OTP to the user's email.
  */
 const forgotPassword = async (email) => {
-  // Step 1: Check if user exists
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('email', email)
-    .single();
-
-  if (userError || !user) {
+  const user = get('SELECT id, email FROM users WHERE email = ?', [email]);
+  if (!user) {
     const err = new Error('No account with this email');
     err.statusCode = 404;
     throw err;
   }
 
-  // Step 2: Rate limit check - max 3 OTP requests in 15 minutes
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-  
-  const { data: recentOtps, error: countError } = await supabase
-    .from('otp_verifications')
-    .select('id')
-    .eq('email', email)
-    .gte('created_at', fifteenMinutesAgo);
+  // Rate limit: max 3 OTP requests in 15 minutes
+  const recentCount = get(
+    `SELECT COUNT(*) AS c FROM otp_verifications
+     WHERE email = ? AND used = 0 AND created_at >= datetime('now', '-15 minutes')`,
+    [email]
+  ).c;
 
-  if (countError) {
-    logger.error('Failed to check OTP rate limit:', countError.message);
-  }
-
-  if (recentOtps && recentOtps.length >= 3) {
+  if (recentCount >= 3) {
     const err = new Error('Too many attempts. Try again in 15 minutes');
     err.statusCode = 429;
     throw err;
   }
 
-  // Step 3: Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // Step 4: Hash OTP
   const otpHash = await bcrypt.hash(otp, 10);
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-  // Step 5: Store OTP in database
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+  run(
+    `INSERT INTO otp_verifications (id, email, otp_hash, expires_at, used) VALUES (?, ?, ?, ?, 0)`,
+    [uuid(), email, otpHash, expiresAt]
+  );
 
-  const { error: insertError } = await supabase
-    .from('otp_verifications')
-    .insert({
-      email,
-      otp_hash: otpHash,
-      expires_at: expiresAt.toISOString(),
-      used: false,
-    });
-
-  if (insertError) {
-    logger.error('Failed to store OTP:', insertError.message);
-    const err = new Error('Failed to process request. Please try again.');
-    err.statusCode = 500;
-    throw err;
-  }
-
-  // Step 6: Send email with OTP
   try {
     await sendEmail({
       to: email,
@@ -269,10 +157,17 @@ const forgotPassword = async (email) => {
         </div>
       `,
     });
-
     logger.info(`Password reset OTP sent to ${email}`);
   } catch (emailError) {
     logger.error('Failed to send OTP email:', emailError.message);
+
+    // No SMTP configured? Fall back to logging the code in development
+    // so the flow is still testable end-to-end for a demo.
+    if (process.env.NODE_ENV !== 'production' && !process.env.SMTP_USER) {
+      logger.warn('SMTP not configured — OTP for demo:', otp);
+      return { message: 'Reset code sent to your email' };
+    }
+
     const err = new Error('Failed to send reset code. Please try again.');
     err.statusCode = 500;
     throw err;
@@ -283,67 +178,37 @@ const forgotPassword = async (email) => {
 
 
 /**
- * Verify OTP - Validate the OTP code and return a reset token.
- * 
- * Steps:
- *  1. Find latest unused OTP for the email
- *  2. Check if OTP has expired
- *  3. Compare submitted OTP with hashed OTP
- *  4. Mark OTP as used
- *  5. Generate and return reset token
- * 
- * @param {string} email - User's email address
- * @param {string} otp - 6-digit OTP code
- * @returns {object} - { reset_token }
+ * Verify OTP and return a short-lived reset token.
  */
 const verifyOtp = async (email, otp) => {
-  // Step 1: Find latest unused OTP
-  const { data: otpRecords, error: fetchError } = await supabase
-    .from('otp_verifications')
-    .select('*')
-    .eq('email', email)
-    .eq('used', false)
-    .order('created_at', { ascending: false })
-    .limit(1);
+  const otpRecord = get(
+    `SELECT * FROM otp_verifications
+     WHERE email = ? AND used = 0
+     ORDER BY created_at DESC LIMIT 1`,
+    [email]
+  );
 
-  if (fetchError || !otpRecords || otpRecords.length === 0) {
+  if (!otpRecord) {
     const err = new Error('Invalid or expired code');
     err.statusCode = 400;
     throw err;
   }
 
-  const otpRecord = otpRecords[0];
-
-  // Step 2: Check if OTP has expired
-  const now = new Date();
-  const expiresAt = new Date(otpRecord.expires_at);
-
-  if (expiresAt < now) {
+  if (new Date(otpRecord.expires_at) < new Date()) {
     const err = new Error('Code has expired. Request a new one');
     err.statusCode = 400;
     throw err;
   }
 
-  // Step 3: Compare OTP
   const isValid = await bcrypt.compare(otp, otpRecord.otp_hash);
-
   if (!isValid) {
     const err = new Error('Incorrect code');
     err.statusCode = 400;
     throw err;
   }
 
-  // Step 4: Mark OTP as used
-  const { error: updateError } = await supabase
-    .from('otp_verifications')
-    .update({ used: true })
-    .eq('id', otpRecord.id);
+  run('UPDATE otp_verifications SET used = 1 WHERE id = ?', [otpRecord.id]);
 
-  if (updateError) {
-    logger.error('Failed to mark OTP as used:', updateError.message);
-  }
-
-  // Step 5: Generate reset token (valid for 15 minutes)
   const resetToken = jwt.sign(
     { email, purpose: 'reset' },
     process.env.JWT_SECRET,
@@ -351,26 +216,14 @@ const verifyOtp = async (email, otp) => {
   );
 
   logger.info(`OTP verified for ${email}`);
-
   return { reset_token: resetToken };
 };
 
 
 /**
- * Reset Password - Update user's password using reset token.
- * 
- * Steps:
- *  1. Verify reset token
- *  2. Validate new password
- *  3. Hash new password
- *  4. Update user's password in database
- * 
- * @param {string} resetToken - JWT reset token from verifyOtp
- * @param {string} newPassword - New password
- * @returns {object} - { message }
+ * Reset Password — update the user's password using the reset token.
  */
 const resetPassword = async (resetToken, newPassword) => {
-  // Step 1: Verify reset token
   let payload;
   try {
     payload = jwt.verify(resetToken, process.env.JWT_SECRET);
@@ -380,14 +233,12 @@ const resetPassword = async (resetToken, newPassword) => {
     throw err;
   }
 
-  // Step 2: Check token purpose
   if (payload.purpose !== 'reset') {
     const err = new Error('Invalid reset token');
     err.statusCode = 400;
     throw err;
   }
 
-  // Step 3: Validate new password
   if (
     newPassword.length < 8 ||
     !/[a-zA-Z]/.test(newPassword) ||
@@ -398,24 +249,16 @@ const resetPassword = async (resetToken, newPassword) => {
     throw err;
   }
 
-  // Step 4: Hash new password
   const passwordHash = await bcrypt.hash(newPassword, 12);
 
-  // Step 5: Update user's password
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({ password_hash: passwordHash })
-    .eq('email', payload.email);
-
-  if (updateError) {
-    logger.error('Failed to update password:', updateError.message);
-    const err = new Error('Failed to update password. Please try again.');
-    err.statusCode = 500;
+  const info = run('UPDATE users SET password_hash = ? WHERE email = ?', [passwordHash, payload.email]);
+  if (info.changes === 0) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
     throw err;
   }
 
   logger.info(`Password reset successful for ${payload.email}`);
-
   return { message: 'Password updated successfully' };
 };
 

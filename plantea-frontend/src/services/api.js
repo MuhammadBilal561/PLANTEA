@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// NOTE: Expo web commonly runs on http://localhost:3000, so using 3000 for the API
-// causes the browser to hit the frontend dev server instead of the backend.
-// Default the API to 3001, and allow overriding via EXPO_PUBLIC_API_BASE_URL.
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+// API base URL. Defaults to the same-origin /api (the backend serves both the
+// API and the production web build). For a separate backend or physical
+// devices, override via EXPO_PUBLIC_API_BASE_URL (e.g. http://192.168.1.5:3000/api).
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || '/api';
 const API_TIMEOUT = parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT) || 10000;
 
 class ApiService {
@@ -102,10 +102,16 @@ class ApiService {
 
   // Auth endpoints
   async register(userData) {
-    return this.request('/auth/register', {
+    const response = await this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+
+    if (response.success && response.data?.token) {
+      await this.setToken(response.data.token);
+    }
+
+    return response;
   }
 
   async login(credentials) {
@@ -114,7 +120,7 @@ class ApiService {
       body: JSON.stringify(credentials),
     });
     
-    if (response.success && response.data.token) {
+    if (response.success && response.data?.token) {
       await this.setToken(response.data.token);
     }
     
@@ -125,22 +131,65 @@ class ApiService {
     return this.request('/auth/me');
   }
 
+  async getProfile() {
+    return this.request('/users/profile');
+  }
+
+  async updateProfile(userData) {
+    return this.request('/users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async forgotPassword(email) {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async verifyOtp(email, otp) {
+    return this.request('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+
+  async resetPassword(resetToken, newPassword) {
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ reset_token: resetToken, new_password: newPassword }),
+    });
+  }
+
   async logout() {
     await this.removeToken();
+  }
+
+  /**
+   * Convert a relative URL (e.g. "/uploads/x.jpg") into an absolute one
+   * that works in <Image> on web + native.
+   */
+  absoluteUrl(pathOrUrl) {
+    if (!pathOrUrl) return null;
+    if (/^https?:\/\//.test(pathOrUrl)) return pathOrUrl;
+    if (pathOrUrl.startsWith('data:')) return pathOrUrl;
+    const base = this.baseURL.replace(/\/api\/?$/, '');
+    return `${base}${pathOrUrl.startsWith('/') ? '' : '/'}${pathOrUrl}`;
   }
 
   // Plants endpoints
   async getPlants(filters = {}) {
     const queryParams = new URLSearchParams(filters).toString();
     const response = await this.request(`/plants${queryParams ? `?${queryParams}` : ''}`);
-    
-    console.log('API Response:', JSON.stringify(response, null, 2));
-    
+
     // Transform backend data to match frontend expectations
     if (response.success && response.data && response.data.plants) {
       response.data.plants = response.data.plants.map(plant => ({
         ...plant,
         plant_id: plant.id,
+        image_url: this.absoluteUrl(plant.image_url),
         seller_name: plant.seller_name || plant.seller?.full_name || 'Unknown Seller',
         seller_city: plant.seller?.city || plant.city,
       }));
@@ -153,13 +202,22 @@ class ApiService {
     const response = await this.request(`/plants/${id}`);
     
     // Transform single plant data
-    if (response.success && response.data) {
+    if (response.success && response.data?.plant) {
+      const p = response.data.plant;
       response.data = {
         ...response.data,
-        plant_id: response.data.id,
-        seller_name: response.data.seller?.full_name || 'Unknown Seller',
-        seller_phone: response.data.seller?.phone,
-        seller_city: response.data.seller?.city || response.data.city,
+        plant: {
+          ...p,
+          plant_id: p.id,
+          seller_name: p.seller?.full_name || 'Unknown Seller',
+          seller_phone: p.seller?.phone,
+          seller_city: p.seller?.city || p.city,
+          image_url: this.absoluteUrl(p.image_url),
+          reviews: (p.reviews || []).map(r => ({
+            ...r,
+            date: r.created_at,
+          })),
+        },
       };
     }
     
@@ -218,16 +276,23 @@ class ApiService {
         orders: orders.map(order => ({
           ...order,
           order_id: order.id,
+          total_amount: order.total_pkr,
+          price_at_order: order.price_at_order ?? order.plant?.price_pkr ?? order.total_pkr,
+          created_at: order.created_at,
           plant_id: order.plant?.id,
           plant_name: order.plant?.name,
-          plant_image: order.plant?.image_url,
-          price_at_order: order.plant?.price_pkr || order.total_pkr,
+          plant_image: this.absoluteUrl(order.plant?.image_url),
+          seller_id: order.seller?.id,
+          seller_name: order.seller?.full_name,
           buyer_id: order.buyer?.id,
           buyer_name: order.buyer?.full_name,
           buyer_phone: order.buyer?.phone,
           rider_id: order.rider?.id,
           rider_name: order.rider?.full_name,
           rider_phone: order.rider?.phone,
+          delivery_address: order.delivery_address,
+          delivery_fee_pkr: order.delivery_fee_pkr,
+          status: order.status,
         }))
       };
     }
@@ -264,13 +329,152 @@ class ApiService {
         ...order,
         order_id: order.id,
         plant_name: order.plant?.name,
-        plant_image: order.plant?.image_url,
+        plant_image: this.absoluteUrl(order.plant?.image_url),
         seller_city: order.plant?.city,
+        delivery_address: order.delivery_address,
+        delivery_fee_pkr: order.delivery_fee_pkr,
         buyer_name: order.buyer?.full_name,
         buyer_phone: order.buyer?.phone,
       }));
     }
     return response;
+  }
+
+  // Wishlist
+  async getWishlist() {
+    return this.request('/wishlist');
+  }
+
+  async addToWishlist(plantId) {
+    return this.request(`/wishlist/${plantId}`, { method: 'POST' });
+  }
+
+  async removeFromWishlist(plantId) {
+    return this.request(`/wishlist/${plantId}`, { method: 'DELETE' });
+  }
+
+  // Notifications
+  async getNotifications() {
+    return this.request('/notifications');
+  }
+
+  async markAllNotificationsRead() {
+    return this.request('/notifications/mark-all-read', { method: 'PUT' });
+  }
+
+  // Payment methods (free platform — COD first)
+  async getPaymentMethods() {
+    return this.request('/payments/methods');
+  }
+
+  // Image upload (self-hosted, no external storage)
+  async uploadImage(imageBase64, mimeType) {
+    return this.request('/uploads', {
+      method: 'POST',
+      body: JSON.stringify({ image_base64: imageBase64, mime_type: mimeType }),
+    });
+  }
+
+  // Featured / trending / categories (home sections)
+  async getFeaturedPlants(limit = 8) {
+    const response = await this.request(`/plants/featured?limit=${limit}`);
+    if (response.success && response.data?.plants) {
+      response.data.plants = response.data.plants.map(plant => ({
+        ...plant,
+        plant_id: plant.id,
+        image_url: this.absoluteUrl(plant.image_url),
+      }));
+    }
+    return response;
+  }
+
+  async getTrendingPlants(limit = 8) {
+    const response = await this.request(`/plants/trending?limit=${limit}`);
+    if (response.success && response.data?.plants) {
+      response.data.plants = response.data.plants.map(plant => ({
+        ...plant,
+        plant_id: plant.id,
+        image_url: this.absoluteUrl(plant.image_url),
+      }));
+    }
+    return response;
+  }
+
+  async getCategories() {
+    return this.request('/plants/categories');
+  }
+
+  // Reviews
+  async createReview(reviewData) {
+    return this.request('/reviews', {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    });
+  }
+
+  async replyToReview(reviewId, reply) {
+    return this.request(`/reviews/${reviewId}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ reply }),
+    });
+  }
+
+  async getSellerReviews(sellerId) {
+    return this.request(`/reviews/seller/${sellerId}`);
+  }
+
+  async getPublicProfile(userId) {
+    return this.request(`/users/${userId}/public`);
+  }
+
+  // Coupons / promotions
+  async previewCoupon(code, subtotal) {
+    return this.request('/coupons/preview', {
+      method: 'POST',
+      body: JSON.stringify({ code, subtotal }),
+    });
+  }
+
+  // My Garden
+  async getMyGarden() {
+    const response = await this.request('/garden');
+    if (response.success && response.data?.garden) {
+      response.data.garden = response.data.garden.map(item => ({
+        ...item,
+        garden_id: item.garden_id,
+        image_url: this.absoluteUrl(item.image_url),
+      }));
+    }
+    return response;
+  }
+
+  async addToGarden(plantId, extra = {}) {
+    return this.request('/garden', {
+      method: 'POST',
+      body: JSON.stringify({ plant_id: plantId, ...extra }),
+    });
+  }
+
+  async removeFromGarden(gardenId) {
+    return this.request(`/garden/${gardenId}`, { method: 'DELETE' });
+  }
+
+  // Analytics
+  async getSellerAnalytics() {
+    return this.request('/analytics/seller');
+  }
+
+  // Admin
+  async adminListUsers(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request(`/admin/users${qs ? `?${qs}` : ''}`);
+  }
+
+  async adminVerifySeller(userId, isVerified) {
+    return this.request(`/admin/users/${userId}/verify`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_verified: isVerified }),
+    });
   }
 
   // Health check

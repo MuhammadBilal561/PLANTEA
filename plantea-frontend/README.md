@@ -86,9 +86,12 @@ All screens are connected to the backend API through the `services/api.js` servi
 ## Build for Production
 
 ```bash
+# Web (served by the backend on the same origin — see plantea-backend/README.md)
+npx expo export --platform web
+
 # Android
 expo build:android
 
-# iOS  
+# iOS
 expo build:ios
 ```

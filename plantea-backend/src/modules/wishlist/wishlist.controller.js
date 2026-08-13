@@ -16,7 +16,7 @@ const getWishlist = async (req, res, next) => {
   try {
     const wishlistItems = await wishlistService.getWishlist(req.user.id);
     
-    return ApiResponse.success(res, wishlistItems, 'Wishlist fetched successfully');
+    return ApiResponse.success(res, { wishlist: wishlistItems }, 'Wishlist fetched successfully');
 
   } catch (err) {
     next(err);

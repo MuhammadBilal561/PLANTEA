@@ -5,54 +5,73 @@ A full-stack mobile application connecting plant buyers, sellers, and delivery r
 ## 🏗️ Architecture
 
 - **Frontend**: React Native (Expo) - Cross-platform mobile app
-- **Backend**: Node.js + Express - REST API with modular architecture  
-- **Database**: Supabase (PostgreSQL) - Cloud database with real-time features
-- **AI Integration**: PlantNet API - Plant identification and health scoring
+- **Backend**: Node.js + Express - REST API with modular architecture
+- **Database**: SQLite (better-sqlite3) - Self-contained, free, zero external accounts
+- **AI Integration**: Built-in pixel-based plant analyzer + optional PlantNet API key
 - **Authentication**: JWT tokens with bcrypt password hashing
+- **Uploads**: Self-hosted image storage served from the backend
+
+**100% free to run** - no Supabase, no cloud database, no credit card, no paid tiers. The production web build is served by the backend on a single origin.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Expo CLI (`npm install -g @expo/cli`)
-- Supabase account
-- PlantNet API key
 
 ### Backend Setup
 ```bash
 cd plantea-backend
 npm install
 cp .env.example .env
-# Configure your .env file with Supabase and PlantNet credentials
 npm run dev
 ```
 
-### Frontend Setup  
+### Frontend Setup
 ```bash
 cd plantea-frontend
 npm install
-expo start
+cp .env.example .env
 ```
 
-### Database Setup
-1. Create a new Supabase project
-2. Run the SQL schema from `plantea-backend/database/schema.sql`
-3. Update `.env` with your Supabase URL and keys
+### Run Everything (single origin)
+```bash
+# 1. Build the web bundle (once)
+cd plantea-frontend
+npx expo export --platform web
+
+# 2. Start the backend (serves API + the web app on one port)
+cd plantea-backend
+node server.js
+# Open http://localhost:3000
+```
+
+For physical devices on the same WiFi, run `node plantea-frontend/scripts/setup-local.js` to point the app at your PC's IP, then start Expo with `npx expo start`.
+
+### Demo Accounts (all password `Test1234`)
+| Role   | Email             |
+|--------|-------------------|
+| Buyer  | shehroz@test.com  |
+| Seller | zainab@test.com   |
+| Rider  | bilal@test.com    |
+| Admin  | admin@plantea.com |
 
 ## 📱 Features
 
 ### For Buyers
 - Browse plants with AI verification badges
-- Smart search and category filters
+- Smart search (full-text, prefix-matched) with category, price and sort filters
 - AI plant scanner with health scoring
+- Seller profile pages (public, verified, ratings)
+- Coupon codes at checkout (percentage/amount, min-order rules)
+- My Garden — save plants with nicknames and water reminders
 - Order tracking with real-time updates
-- Secure payment options (COD, JazzCash, EasyPaisa)
+- Free payment options (COD, EasyPaisa)
 
-### For Sellers  
+### For Sellers
 - Easy plant listing with AI verification
-- Dashboard with earnings analytics
+- Dashboard with real revenue analytics, top plants and weekly chart
 - Order management system
-- Commission-based pricing (10% free, 5% paid tier)
+- 100% commission-free selling
 
 ### For Riders
 - Available orders with route optimization
@@ -75,24 +94,27 @@ expo start
 - Comprehensive error handling
 
 **Database**
-- PostgreSQL via Supabase
+- SQLite via better-sqlite3 (no external service)
 - 3NF normalized schema
-- Row Level Security (RLS)
-- Real-time subscriptions
+- Transactional order lifecycle
+- Self-hosted image uploads
 
-**External APIs**
-- PlantNet API for plant identification
-- Supabase Auth for user management
+**External APIs (optional)**
+- PlantNet API for plant identification (works without it via built-in analyzer)
+- SMTP for password-reset emails (falls back to logged demo codes)
 
 ## 📊 Database Schema
 
-6 main tables with proper relationships:
+Main tables with proper relationships:
 - `users` - All roles (buyer/seller/rider)
 - `plants` - Plant listings with AI verification
 - `orders` - Order lifecycle management
-- `subscriptions` - Seller plan management
-- `reviews` - Buyer feedback system
+- `reviews` - Buyer feedback system (verified purchases, seller replies)
 - `scan_logs` - AI scanner audit trail
+- `wishlists` - Buyer saved plants
+- `notifications` - In-app alerts
+
+Plus supporting tables for coupons, my-garden, plant FTS search, and analytics.
 
 ## 🔐 Security Features
 
@@ -100,31 +122,44 @@ expo start
 - JWT token authentication
 - Role-based access control
 - Input validation and sanitization
-- Rate limiting (100 requests/15min)
+- Rate limiting (300 requests/15min)
 - Security headers with Helmet.js
 - SQL injection prevention
 
+## 🧪 Testing
+
+Backend API tests run with Jest + Supertest against a temp SQLite database:
+
+```bash
+cd plantea-backend
+npx jest
+```
+
+46 tests across 5 suites cover auth, plants (incl. FTS search), orders (state machine,
+stock/refund), reviews (delivered-order gating, replies, IDOR), and capabilities
+(coupons, garden, analytics, admin, public profiles).
+
 ## 🚀 Deployment
 
-### Backend (Railway)
+The whole product deploys as one Node.js process:
+
 ```bash
-# Connect to Railway
-railway login
-railway init
-railway add
-railway deploy
+# Build frontend, then deploy plantea-backend with the dist/ folder included
+cd plantea-frontend && npx expo export --platform web
+cd ../plantea-backend && node server.js
 ```
 
-### Frontend (Expo)
-```bash
-# Build for production
-expo build:android
-expo build:ios
-```
+The backend auto-detects `plantea-frontend/dist` and serves it with an SPA fallback, so `/` opens the app and `/api/*` serves the REST API on the same origin.
+
+Run Plantea on your phone for free (same-WiFi, Expo tunnel, or free host +
+tunnel): see [SETUP_GUIDE.md](SETUP_GUIDE.md).
+
+The 12 seeded demo plants ship with self-hosted photos served from
+`/uploads/` (Wikimedia Commons images, bundled in `plantea-backend/uploads/`).
 
 ## 📈 Quality Metrics
 
-- Response time: < 2 seconds (tracked)
+- Response time: < 2 seconds (tracked via `X-Response-Time`)
 - Error rate: < 1% (monitored)
 - AI Scanner: < 5 seconds (10s timeout)
 - Uptime: 99% target

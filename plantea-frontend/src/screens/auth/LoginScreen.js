@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, RADII, FONTS } from '../../theme';
+import Icon from '../../components/ui/Icon';
 
 // Google auth is optional and often breaks local testing if not configured.
 // Keep it disabled on web (and safe in native) until client IDs are set.
@@ -50,17 +51,11 @@ export default function LoginScreen({ navigation }) {
   const handleGoogleLoginSuccess = async (token) => {
     setIsLoading(true);
     try {
-      if (!token) {
-        throw new Error('Missing Google access token');
-      }
-      // Here we would normally send token to our backend
-      // await loginWithGoogle(token);
-      
-      // Mocking successful google login for now:
-      await login({ email: 'google_user@plantea.pk', password: 'password123', isGoogle: true });
-      Toast.show({ type: 'success', text1: 'Welcome!', text2: 'Google login successful' });
+      // Google sign-in is not wired to the backend yet. Users can
+      // register/login with email + password or one of the demo accounts.
+      throw new Error('Google sign-in is not available. Please log in with email and password.');
     } catch (err) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Google login failed' });
+      Toast.show({ type: 'error', text1: 'Error', text2: err.message || 'Google login failed' });
     } finally {
       setIsLoading(false);
     }
@@ -126,12 +121,12 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+          <Icon name="arrow-left" size={24} color={COLORS.t1} />
         </TouchableOpacity>
 
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
-            <Text style={styles.logoEmoji}>🌿</Text>
+            <Icon name="leaf" size={36} color={COLORS.p700} />
           </View>
         </View>
 
@@ -192,7 +187,7 @@ export default function LoginScreen({ navigation }) {
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeButton}
               >
-                <Text style={styles.eyeIcon}>{showPassword ? '👁' : '👁'}</Text>
+                <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
               </TouchableOpacity>
             </View>
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
@@ -236,14 +231,14 @@ export default function LoginScreen({ navigation }) {
             disabled={!googleAuthEnabled || !request || isLoading}
             activeOpacity={0.7}
           >
-            <Text style={styles.googleIcon}>🌐</Text>
+            <Icon name="globe" size={18} color={COLORS.t1} />
             <Text style={styles.googleButtonText}>Continue with Google</Text>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register', { role: 'buyer' })}>
-              <Text style={styles.registerLink}>Register →</Text>
+              <Text style={styles.registerLink}>Register</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -267,10 +262,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
   },
-  backText: {
-    fontSize: 24,
-    color: COLORS.p700,
-  },
   logoContainer: {
     alignItems: 'flex-start',
     marginBottom: 20,
@@ -282,9 +273,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  logoEmoji: {
-    fontSize: 28,
   },
   header: {
     marginBottom: 24,
@@ -336,9 +324,6 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 14,
   },
-  eyeIcon: {
-    fontSize: 18,
-  },
   errorText: {
     fontFamily: FONTS.nunito,
     fontSize: 12,
@@ -389,16 +374,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
     backgroundColor: COLORS.white,
     borderWidth: 2,
     borderColor: '#E5EBE8',
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
-  },
-  googleIcon: {
-    fontSize: 18,
-    marginRight: 10,
   },
   googleButtonText: {
     fontFamily: FONTS.soraBold,

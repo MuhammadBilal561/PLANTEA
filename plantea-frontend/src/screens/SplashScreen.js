@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS } from '../theme';
+import Icon from '../components/ui/Icon';
 
 const { width, height } = Dimensions.get('window');
 
@@ -77,7 +78,7 @@ export default function SplashScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoBadge}>
-          <Text style={styles.logoEmoji}>🌱</Text>
+          <Icon name="leaf" size={40} color={COLORS.p700} />
         </View>
         <Text style={styles.appName}>Plantea</Text>
         <View style={styles.badgeContainer}>
@@ -87,7 +88,8 @@ export default function SplashScreen({ navigation }) {
 
       <Animated.View style={[styles.bottomContainer, { opacity: fadeAnim }]}>
         <View style={styles.aiBadge}>
-          <Text style={styles.aiBadgeText}>✨ Powered by AI</Text>
+          <Icon name="cpu" size={12} color={COLORS.white} />
+          <Text style={styles.aiBadgeText}>Powered by AI</Text>
         </View>
         <View style={styles.loaderTrack}>
           <Animated.View
@@ -141,13 +143,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  logoEmoji: {
-    fontSize: 50,
-  },
   appName: {
     fontFamily: FONTS.soraExtraBold,
-    fontSize: 48,
-    color: '#F8FAFC',
+    fontSize: 48,    color: '#F8FAFC',
     letterSpacing: -1.5,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 4 },
@@ -177,6 +175,7 @@ const styles = StyleSheet.create({
   aiBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
     backgroundColor: 'rgba(58, 140, 98, 0.2)',
     paddingHorizontal: 16,
     paddingVertical: 8,

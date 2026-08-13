@@ -1,51 +1,80 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Pressable } from 'react-native';
 import ApiService from '../../services/api';
+import { Icon, Chip, EmptyState } from '../../components/ui';
+import PlantCard from '../../components/PlantCard';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
-export default function SearchScreen({ navigation }) {
+const SORTS = [
+  { key: 'popular', label: 'Popular' },
+  { key: 'newest', label: 'Newest' },
+  { key: 'price_asc', label: 'Price: Low-High' },
+  { key: 'price_desc', label: 'Price: High-Low' },
+  { key: 'rating', label: 'Top Rated' },
+];
+
+export default function SearchScreen({ navigation, route }) {
+  const initialCategory = route.params?.category || 'All';
+  const initialSort = route.params?.sort || 'popular';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [plants, setPlants] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(['All', 'Indoor', 'Outdoor', 'Rare', 'Flowering', 'Medicinal', 'Succulent']);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [sort, setSort] = useState(initialSort);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [priceRange, setPriceRange] = useState('All');
   const searchTimeout = useRef(null);
 
-  const categories = ['All', 'Indoor', 'Outdoor', 'Rare', 'Flowering', 'Medicinal', 'Succulent'];
-  const priceRanges = ['All', 'Under 500', '500-1000', '1000-2000', 'Above 2000'];
+  const priceRanges = [
+    { label: 'All', min: null, max: null },
+    { label: 'Under 500', min: null, max: 500 },
+    { label: '500 - 1000', min: 500, max: 1000 },
+    { label: '1000 - 2000', min: 1000, max: 2000 },
+    { label: 'Above 2000', min: 2000, max: null },
+  ];
 
   useEffect(() => {
-    searchPlants();
-  }, [selectedCategory, priceRange]);
+    ApiService.getCategories().then((res) => {
+      if (res.success && res.data.categories) {
+        setCategories(['All', ...res.data.categories.map((c) => c.category)]);
+      }
+    }).catch(() => {});
+  }, []);
 
-  const searchPlants = async () => {
+  useEffect(() => {
+    setPage(1);
+    searchPlants(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, sort, priceRange]);
+
+  const buildFilters = () => {
+    const range = priceRanges.find((r) => r.label === priceRange) || priceRanges[0];
+    const filters = { sort };
+    if (selectedCategory !== 'All') filters.category = selectedCategory;
+    if (searchQuery.trim()) filters.search = searchQuery.trim();
+    if (range.min !== null) filters.minPrice = range.min;
+    if (range.max !== null) filters.maxPrice = range.max;
+    return filters;
+  };
+
+  const searchPlants = async (reset = false) => {
+    if (loading && !reset) return;
     setLoading(true);
     try {
-      const filters = {};
-      if (selectedCategory !== 'All') filters.category = selectedCategory;
-      if (searchQuery.trim()) filters.search = searchQuery.trim();
-
+      const filters = buildFilters();
+      filters.page = reset ? 1 : page;
       const response = await ApiService.getPlants(filters);
       if (response.success) {
-        let results = response.data.plants || [];
-        
-        // Apply price filter
-        if (priceRange !== 'All') {
-          if (priceRange === 'Under 500') {
-            results = results.filter(p => p.price_pkr < 500);
-          } else if (priceRange === '500-1000') {
-            results = results.filter(p => p.price_pkr >= 500 && p.price_pkr <= 1000);
-          } else if (priceRange === '1000-2000') {
-            results = results.filter(p => p.price_pkr > 1000 && p.price_pkr <= 2000);
-          } else if (priceRange === 'Above 2000') {
-            results = results.filter(p => p.price_pkr > 2000);
-          }
-        }
-
-        setPlants(results.filter(p => p.is_available));
+        const results = response.data.plants || [];
+        setPlants(reset ? results : (prev) => [...prev, ...results]);
+        setHasMore(results.length === response.data.page_size);
+        if (reset) setPage(1);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      if (reset) setPlants([]);
     } finally {
       setLoading(false);
     }
@@ -55,73 +84,40 @@ export default function SearchScreen({ navigation }) {
     setSearchQuery(text);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
-      searchPlants();
-    }, 500);
+      setPage(1);
+      searchPlants(true);
+    }, 450);
   };
 
-  const getPlaceholderColor = (index) => {
-    const colors = [COLORS.p100, COLORS.p50, '#EAF4FF'];
-    return colors[index % colors.length];
+  const loadMore = () => {
+    if (!hasMore || loading) return;
+    setPage((p) => p + 1);
+    searchPlants(false);
   };
 
-  const renderPlantCard = ({ item, index }) => {
-    const bgColor = getPlaceholderColor(index);
-    
-    return (
-      <TouchableOpacity
-        style={styles.plantCard}
-        onPress={() => navigation.navigate('PlantDetail', { plantId: item.plant_id })}
-        activeOpacity={0.7}
-      >
-        {item.image_url ? (
-          <Image source={{ uri: item.image_url }} style={styles.plantImage} resizeMode="cover" />
-        ) : (
-          <View style={[styles.plantImagePlaceholder, { backgroundColor: bgColor }]}>
-            <Text style={styles.plantImageText}>{item.name?.charAt(0).toUpperCase() || 'P'}</Text>
-          </View>
-        )}
-        
-        {item.ai_verified && (
-          <View style={styles.aiBadge}>
-            <Text style={styles.aiBadgeText}>AI ✓</Text>
-          </View>
-        )}
-
-        <View style={styles.plantInfo}>
-          <Text style={styles.plantName} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.plantSeller} numberOfLines={1}>{item.seller_name || 'Seller'}</Text>
-          <View style={styles.plantFooter}>
-            <Text style={styles.plantPrice}>Rs. {item.price_pkr}</Text>
-            {item.category && (
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryChipText}>{item.category}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const activePriceRange = priceRanges.find((r) => r.label === priceRange);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.white} />
+        </TouchableOpacity>
         <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>⌕</Text>
+          <Icon name="search" size={18} color={COLORS.t3} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search plants..."
             placeholderTextColor={COLORS.t4}
             value={searchQuery}
             onChangeText={handleSearchChange}
-            autoFocus
+            autoFocus={!route.params?.category}
+            returnKeyType="search"
+            onSubmitEditing={() => { setPage(1); searchPlants(true); }}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => {
-              setSearchQuery('');
-              searchPlants();
-            }}>
-              <Text style={styles.clearIcon}>✕</Text>
+            <TouchableOpacity onPress={() => { setSearchQuery(''); setPage(1); searchPlants(true); }} accessibilityLabel="Clear">
+              <Icon name="x" size={16} color={COLORS.t4} />
             </TouchableOpacity>
           )}
         </View>
@@ -135,56 +131,68 @@ export default function SearchScreen({ navigation }) {
           data={categories}
           keyExtractor={(item) => item}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.filterChip, selectedCategory === item && styles.filterChipActive]}
-              onPress={() => setSelectedCategory(item)}
-            >
-              <Text style={[styles.filterChipText, selectedCategory === item && styles.filterChipTextActive]}>
-                {item}
-              </Text>
-            </TouchableOpacity>
+            <Chip label={item} selected={selectedCategory === item} onPress={() => setSelectedCategory(item)} />
           )}
           contentContainerStyle={styles.filtersList}
         />
 
-        <Text style={[styles.filterLabel, { marginTop: 12 }]}>Price Range</Text>
+        <View style={styles.row}>
+          <Text style={styles.filterLabel}>Price</Text>
+          <Text style={styles.activeRange}>{activePriceRange.label}</Text>
+        </View>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={priceRanges}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.label}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.filterChip, priceRange === item && styles.filterChipActive]}
-              onPress={() => setPriceRange(item)}
-            >
-              <Text style={[styles.filterChipText, priceRange === item && styles.filterChipTextActive]}>
-                {item}
-              </Text>
-            </TouchableOpacity>
+            <Chip label={item.label} selected={priceRange === item.label} onPress={() => setPriceRange(item.label)} />
+          )}
+          contentContainerStyle={styles.filtersList}
+        />
+
+        <Text style={[styles.filterLabel, { marginTop: 12 }]}>Sort</Text>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={SORTS}
+          keyExtractor={(item) => item.key}
+          renderItem={({ item }) => (
+            <Chip label={item.label} selected={sort === item.key} onPress={() => setSort(item.key)} />
           )}
           contentContainerStyle={styles.filtersList}
         />
       </View>
 
-      {loading ? (
+      {loading && plants.length === 0 ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.p700} />
+          <ActivityIndicatorCompat />
         </View>
       ) : (
         <FlatList
           data={plants}
-          renderItem={renderPlantCard}
+          renderItem={({ item, index }) => (
+            <PlantCard
+              plant={item}
+              index={index}
+              onPress={() => navigation.navigate('PlantDetail', { plantId: item.plant_id })}
+            />
+          )}
           keyExtractor={(item) => item.plant_id}
           numColumns={2}
           contentContainerStyle={styles.plantsGrid}
           columnWrapperStyle={styles.plantsRow}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={hasMore ? <FooterSpinner /> : null}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyEmoji}>🔍</Text>
-              <Text style={styles.emptyText}>No plants found</Text>
-              <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
-            </View>
+            loading ? null : (
+              <EmptyState
+                icon="search"
+                title="No plants found"
+                message="Try adjusting your filters or search terms."
+              />
+            )
           }
         />
       )}
@@ -192,177 +200,66 @@ export default function SearchScreen({ navigation }) {
   );
 }
 
+const ActivityIndicatorCompat = () => (
+  <Text style={styles.loadingText}>Loading...</Text>
+);
+
+const FooterSpinner = () => (
+  <View style={styles.footer}>
+    <Text style={styles.footerText}>Loading more...</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   header: {
     backgroundColor: COLORS.p800,
-    paddingTop: 60,
+    paddingTop: 56,
     paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  searchBar: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    padding: 12,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  searchIcon: {
-    fontSize: 18,
-    color: COLORS.t4,
-    marginRight: 10,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  searchInput: {
+  searchBar: {
     flex: 1,
-    fontFamily: FONTS.nunito,
-    fontSize: 14,
-    color: COLORS.t1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  clearIcon: {
-    fontSize: 16,
-    color: COLORS.t4,
-    padding: 4,
-  },
+  searchInput: { flex: 1, fontFamily: FONTS.nunito, fontSize: 14, color: COLORS.t1, padding: 0 },
   filtersSection: {
     backgroundColor: COLORS.white,
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.p100,
+    borderBottomColor: COLORS.border,
   },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
   filterLabel: {
     fontFamily: FONTS.nunitoBold,
     fontSize: 12,
     color: COLORS.t2,
     marginBottom: 8,
   },
-  filtersList: {
-    gap: 8,
-  },
-  filterChip: {
-    backgroundColor: COLORS.bg,
-    borderWidth: 2,
-    borderColor: COLORS.p100,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: RADII.chip,
-    marginRight: 8,
-  },
-  filterChipActive: {
-    backgroundColor: COLORS.p700,
-    borderColor: COLORS.p700,
-  },
-  filterChipText: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 12,
-    color: COLORS.t2,
-  },
-  filterChipTextActive: {
-    color: COLORS.white,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plantsGrid: {
-    padding: 16,
-  },
-  plantsRow: {
-    justifyContent: 'space-between',
-  },
-  plantCard: {
-    width: '48%',
-    borderRadius: RADII.card,
-    backgroundColor: COLORS.white,
-    ...SHADOWS.card,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  plantImage: {
-    width: '100%',
-    height: 120,
-  },
-  plantImagePlaceholder: {
-    width: '100%',
-    height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plantImageText: {
-    fontFamily: FONTS.soraExtraBold,
-    fontSize: 32,
-    color: COLORS.p700,
-  },
-  aiBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: COLORS.p500,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: RADII.chip,
-  },
-  aiBadgeText: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 9,
-    color: COLORS.white,
-  },
-  plantInfo: {
-    padding: 10,
-  },
-  plantName: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 13,
-    color: COLORS.t1,
-  },
-  plantSeller: {
-    fontFamily: FONTS.nunito,
-    fontSize: 11,
-    color: COLORS.t3,
-    marginTop: 2,
-  },
-  plantFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  plantPrice: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 14,
-    color: COLORS.p700,
-  },
-  categoryChip: {
-    backgroundColor: COLORS.p100,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  categoryChipText: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 9,
-    color: COLORS.p700,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 18,
-    color: COLORS.t1,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontFamily: FONTS.nunito,
-    fontSize: 14,
-    color: COLORS.t3,
-  },
+  activeRange: { fontFamily: FONTS.nunitoBold, fontSize: 12, color: COLORS.p700, marginBottom: 8 },
+  filtersList: { gap: 8, paddingRight: 12 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { fontFamily: FONTS.nunito, color: COLORS.t3 },
+  plantsGrid: { padding: 16, paddingBottom: 40 },
+  plantsRow: { justifyContent: 'space-between', gap: 12 },
+  footer: { alignItems: 'center', paddingVertical: 16 },
+  footerText: { fontFamily: FONTS.nunito, fontSize: 12, color: COLORS.t3 },
 });
