@@ -80,24 +80,33 @@ export default function SellerEarningsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.p700} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={18} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Earnings</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: COLORS.p50 }]}>
+              <Icon name="dollar-sign" size={16} color={COLORS.p700} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.thisMonth}</Text>
             <Text style={styles.summaryLabel}>This Month Gross</Text>
           </View>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#FDF0D3' }]}>
+              <Icon name="percent" size={16} color="#A57110" />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.commission}</Text>
             <Text style={styles.summaryLabel}>Commission Paid</Text>
           </View>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#EAF4FF' }]}>
+              <Icon name="credit-card" size={16} color={COLORS.info} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.net}</Text>
             <Text style={styles.summaryLabel}>Net Earnings</Text>
           </View>
@@ -117,30 +126,38 @@ export default function SellerEarningsScreen({ navigation }) {
 
         <View style={styles.ordersSection}>
           <Text style={styles.sectionTitle}>Order History</Text>
-          {Object.entries(groupedOrders).map(([month, monthOrders]) => (
-            <View key={month}>
-              <Text style={styles.monthHeader}>{month}</Text>
-              {monthOrders.map((order) => (
-                <View key={order.order_id} style={styles.orderRow}>
-                  <View style={styles.orderInfo}>
-                    <Text style={styles.orderPlant}>{order.plant_name}</Text>
-                    <Text style={styles.orderDate}>{new Date(order.created_at).toLocaleDateString()}</Text>
-                  </View>
-                  <View style={styles.orderAmounts}>
-                    <Text style={styles.orderAmount}>Rs. {order.price_at_order}</Text>
-                    <Text style={styles.orderCommission}>-Rs. {order.commission_pkr || 0}</Text>
-                    <Text style={styles.orderNet}>Rs. {order.price_at_order - (order.commission_pkr || 0)}</Text>
-                  </View>
-                </View>
-              ))}
+          {orders.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Icon name="trending-down" size={36} color={COLORS.t4} />
+              <Text style={styles.emptyText}>No earnings yet</Text>
             </View>
-          ))}
+          ) : (
+            Object.entries(groupedOrders).map(([month, monthOrders]) => (
+              <View key={month}>
+                <Text style={styles.monthHeader}>{month}</Text>
+                {monthOrders.map((order) => (
+                  <View key={order.order_id} style={styles.orderRow}>
+                    <View style={styles.orderInfo}>
+                      <Text style={styles.orderPlant}>{order.plant_name}</Text>
+                      <Text style={styles.orderDate}>{new Date(order.created_at).toLocaleDateString()}</Text>
+                    </View>
+                    <View style={styles.orderAmounts}>
+                      <Text style={styles.orderAmount}>Rs. {order.price_at_order}</Text>
+                      <Text style={styles.orderCommission}>-Rs. {order.commission_pkr || 0}</Text>
+                      <Text style={styles.orderNet}>Rs. {order.price_at_order - (order.commission_pkr || 0)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ))
+          )}
         </View>
 
         <TouchableOpacity
           style={styles.withdrawButton}
           onPress={() => Toast.show({ type: 'info', text1: 'Feature coming soon' })}
         >
+          <Icon name="arrow-down-circle" size={16} color={COLORS.p700} />
           <Text style={styles.withdrawButtonText}>Request Withdrawal</Text>
         </TouchableOpacity>
 
@@ -170,6 +187,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: COLORS.t1,
   },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   content: {
     flex: 1,
     padding: 18,
@@ -185,6 +210,14 @@ const styles = StyleSheet.create({
     borderRadius: RADII.card,
     padding: 14,
     ...SHADOWS.card,
+  },
+  summaryIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   summaryValue: {
     fontFamily: FONTS.soraExtraBold,
@@ -284,15 +317,28 @@ const styles = StyleSheet.create({
     color: COLORS.p700,
   },
   withdrawButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     borderWidth: 2,
     borderColor: COLORS.p700,
     borderRadius: RADII.btn,
     paddingVertical: 14,
-    alignItems: 'center',
   },
   withdrawButtonText: {
     fontFamily: FONTS.soraBold,
     fontSize: 14,
     color: COLORS.p700,
+  },
+  emptyContainer: {
+    padding: 30,
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptyText: {
+    fontFamily: FONTS.nunito,
+    fontSize: 13,
+    color: COLORS.t3,
   },
 });

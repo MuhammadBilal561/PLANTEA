@@ -5,11 +5,15 @@ import { COLORS, FONTS, RADII } from '../../theme';
 
 /**
  * Section title row with optional "See all" action.
+ * @param {string} icon optional Feather icon name rendered before the title
  */
-const SectionHeader = ({ title, onSeeAll, seeAllLabel = 'See all' }) => {
+const SectionHeader = ({ title, icon, onSeeAll, seeAllLabel = 'See all' }) => {
   return (
     <View style={styles.row}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleWrap}>
+        {icon ? <Icon name={icon} size={16} color={COLORS.p600} style={styles.titleIcon} /> : null}
+        <Text style={styles.title}>{title}</Text>
+      </View>
       {onSeeAll ? (
         <TouchableOpacity style={styles.seeAll} onPress={onSeeAll} activeOpacity={0.7}>
           <Text style={styles.seeAllText}>{seeAllLabel}</Text>
@@ -26,6 +30,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  titleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleIcon: {
+    marginRight: 6,
   },
   title: {
     fontFamily: FONTS.soraBold,

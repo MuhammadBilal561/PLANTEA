@@ -111,7 +111,7 @@ export default function ScanResultScreen({ navigation, route }) {
       {careRows.length > 0 && (
         <View style={styles.careCard}>
           <View style={styles.careTitleRow}>
-            <Icon name="leaf" size={16} color={COLORS.p700} />
+            <Icon name="feather" size={16} color={COLORS.p700} />
             <Text style={styles.careTitle}>Care Instructions</Text>
           </View>
           {careRows.map((row, index) => (
@@ -125,7 +125,7 @@ export default function ScanResultScreen({ navigation, route }) {
           ))}
           {care.tips && (
             <View style={styles.careTipRow}>
-              <Icon name="lightbulb" size={14} color={COLORS.p700} />
+              <Icon name="zap" size={14} color={COLORS.p700} />
               <Text style={styles.careTipText}>{care.tips}</Text>
             </View>
           )}
@@ -135,7 +135,7 @@ export default function ScanResultScreen({ navigation, route }) {
       {scanResult.funFact && (
         <View style={styles.funFactCard}>
           <View style={styles.funFactRow}>
-            <Icon name="leaf" size={14} color={COLORS.p700} />
+            <Icon name="feather" size={14} color={COLORS.p700} />
             <Text style={styles.funFactText}>{scanResult.funFact}</Text>
           </View>
         </View>

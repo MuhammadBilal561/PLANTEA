@@ -71,8 +71,8 @@ export default function ForgotPasswordScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={24} color={COLORS.t1} />
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+        <Icon name="arrow-left" size={20} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -92,8 +92,9 @@ export default function ForgotPasswordScreen({ navigation }) {
             emailFocused && styles.inputContainerFocused,
             error && styles.inputContainerError,
           ]}>
+            <Icon name="mail" size={18} color={error ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { flex: 1 }]}
               placeholder="your@email.com"
               placeholderTextColor={COLORS.t4}
               value={email}
@@ -140,8 +141,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
@@ -188,6 +192,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
     borderColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputIcon: {
+    marginLeft: 14,
+    marginRight: 4,
   },
   inputContainerFocused: {
     borderColor: COLORS.p400,

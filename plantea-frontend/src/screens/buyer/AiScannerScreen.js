@@ -120,10 +120,16 @@ export default function AiScannerScreen({ navigation, route }) {
           </View>
           <Text style={styles.scTip}>We need camera access to scan your plant.</Text>
           <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
-            <Text style={styles.permBtnText}>Grant Permission</Text>
+            <View style={styles.permBtnContent}>
+              <Icon name="camera" size={16} color="#fff" />
+              <Text style={styles.permBtnText}>Grant Permission</Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.galleryBtn} onPress={handleGallery}>
-            <Text style={styles.galleryBtnText}>Use photo from gallery instead</Text>
+            <View style={styles.permBtnContent}>
+              <Icon name="image" size={16} color={COLORS.p400} />
+              <Text style={styles.galleryBtnText}>Use photo from gallery instead</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -332,6 +338,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 20,
+  },
+  permBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   permBtnText: {
     color: '#fff',

@@ -70,28 +70,40 @@ export default function RiderEarningsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.p700} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={18} color={COLORS.p700} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Earnings</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.summaryGrid}>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="trending-up" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.today}</Text>
             <Text style={styles.summaryLabel}>Today</Text>
           </View>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="calendar" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.thisWeek}</Text>
             <Text style={styles.summaryLabel}>This Week</Text>
           </View>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="layers" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.thisMonth}</Text>
             <Text style={styles.summaryLabel}>This Month</Text>
           </View>
           <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="credit-card" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.summaryValue}>Rs. {stats.total}</Text>
             <Text style={styles.summaryLabel}>Total</Text>
           </View>
@@ -115,6 +127,7 @@ export default function RiderEarningsScreen({ navigation }) {
           ))}
           {deliveries.length === 0 && (
             <View style={styles.emptyContainer}>
+              <Icon name="truck" size={36} color={COLORS.t4} />
               <Text style={styles.emptyText}>No deliveries yet</Text>
             </View>
           )}
@@ -144,6 +157,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: COLORS.t1,
   },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   content: {
     flex: 1,
     padding: 18,
@@ -160,6 +181,14 @@ const styles = StyleSheet.create({
     borderRadius: RADII.card,
     padding: 16,
     ...SHADOWS.card,
+  },
+  summaryIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   summaryValue: {
     fontFamily: FONTS.soraExtraBold,
@@ -219,6 +248,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
+    gap: 8,
   },
   emptyText: {
     fontFamily: FONTS.nunito,

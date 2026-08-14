@@ -1,17 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, FONTS, RADII } from '../../theme';
-
-const STAR_COLORS = ['#F5B731', '#F5B731', '#F5B731', '#E8A020', '#C8911E'];
+import Icon from './Icon';
+import { COLORS, FONTS } from '../../theme';
 
 /**
- * Star rating display.
+ * Star rating display built from Feather vector stars.
  * @param {number} rating 0-5
  * @param {number} size
  * @param {boolean} showValue renders "4.5" next to stars
  * @param {number} count optional review count badge
  */
-const Rating = ({ rating = 0, size = 14, showValue = true, count, color = COLORS.star }) => {
+const Rating = ({ rating = 0, size = 14, showValue = true, count, color = COLORS.star, emptyColor = COLORS.t4 }) => {
   if (rating == null || isNaN(rating)) rating = 0;
   const stars = [];
   const rounded = Math.round(rating);
@@ -19,9 +18,13 @@ const Rating = ({ rating = 0, size = 14, showValue = true, count, color = COLORS
   for (let i = 1; i <= 5; i++) {
     const filled = i <= rounded;
     stars.push(
-      <Text key={i} style={{ fontSize: size, color: filled ? color : COLORS.t4, marginRight: 1 }}>
-        ★
-      </Text>
+      <Icon
+        key={i}
+        name="star"
+        size={size}
+        color={filled ? color : emptyColor}
+        style={styles.star}
+      />
     );
   }
 
@@ -40,6 +43,7 @@ const Rating = ({ rating = 0, size = 14, showValue = true, count, color = COLORS
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
+  star: { marginRight: 2 },
   value: {
     fontFamily: FONTS.nunitoBold,
     color: COLORS.t2,

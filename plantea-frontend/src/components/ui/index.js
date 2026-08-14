@@ -8,6 +8,7 @@
 
 export { default as Button } from './Button';
 export { default as Icon } from './Icon';
+export { default as TabIcon } from './TabIcon';
 export { default as Rating } from './Rating';
 export { default as Badge } from './Badge';
 export { default as Chip } from './Chip';

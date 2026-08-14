@@ -211,6 +211,7 @@ export default function SellerDashboardScreen() {
             style={styles.actionButton}
             onPress={() => handleOrderAction(item.order_id, 'confirmed')}
           >
+            <Icon name="check" size={15} color={COLORS.white} />
             <Text style={styles.actionButtonText}>Confirm Order</Text>
           </TouchableOpacity>
         )}
@@ -247,18 +248,30 @@ export default function SellerDashboardScreen() {
       <ScrollView style={styles.content}>
         <View style={styles.statsGrid}>
           <Animated.View entering={ZoomIn.delay(100)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: COLORS.p50 }]}>
+              <Icon name="dollar-sign" size={18} color={COLORS.p700} />
+            </View>
             <Text style={styles.statValue}>Rs. {stats.weeklyEarnings}</Text>
             <Text style={styles.statLabel}>Revenue</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(200)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#EAF4FF' }]}>
+              <Icon name="package" size={18} color={COLORS.info} />
+            </View>
             <Text style={styles.statValue}>{stats.totalOrders}</Text>
             <Text style={styles.statLabel}>Total Orders</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(300)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#FDF0D3' }]}>
+              <Icon name="layers" size={18} color="#A57110" />
+            </View>
             <Text style={styles.statValue}>{stats.activeListings}</Text>
             <Text style={styles.statLabel}>Active Listings</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(400)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#FDF0D3' }]}>
+              <Icon name="star" size={18} color={COLORS.star} />
+            </View>
             <Text style={styles.statValue}>{stats.rating ? stats.rating.toFixed(1) : '—'}</Text>
             <Text style={styles.statLabel}>Avg Rating</Text>
           </Animated.View>
@@ -290,6 +303,7 @@ export default function SellerDashboardScreen() {
           </View>
         )}
 
+        <Text style={styles.sectionTitle}>Recent Orders</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -322,6 +336,7 @@ export default function SellerDashboardScreen() {
           scrollEnabled={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
+              <Icon name="package" size={40} color={COLORS.t4} />
               <Text style={styles.emptyText}>No orders yet</Text>
             </View>
           }
@@ -377,6 +392,14 @@ const styles = StyleSheet.create({
     borderRadius: RADII.card,
     padding: 16,
     ...SHADOWS.card,
+  },
+  statIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
   statValue: {
     fontFamily: FONTS.soraExtraBold,
@@ -498,23 +521,14 @@ const styles = StyleSheet.create({
     color: COLORS.p700,
     marginTop: 6,
   },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: RADII.chip,
-    marginTop: 8,
-  },
-  statusBadgeText: {
-    fontFamily: FONTS.nunitoBold,
-    fontSize: 11,
-    color: COLORS.white,
-  },
   actionButton: {
     backgroundColor: COLORS.p700,
     borderRadius: RADII.btn,
     paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
     marginTop: 10,
   },
   actionButtonText: {
@@ -525,6 +539,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
+    gap: 10,
   },
   emptyText: {
     fontFamily: FONTS.nunito,

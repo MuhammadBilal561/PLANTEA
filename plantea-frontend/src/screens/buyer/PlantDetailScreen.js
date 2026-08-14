@@ -201,7 +201,7 @@ export default function PlantDetailScreen({ navigation, route }) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.wishlistButton} onPress={toggleWishlist} accessibilityLabel="Wishlist">
-          <Icon name={isWishlisted ? 'heart' : 'heart-outline'} size={20} color={isWishlisted ? COLORS.red : COLORS.t2} />
+          <Icon name="heart" size={20} color={isWishlisted ? COLORS.red : COLORS.t2} />
         </TouchableOpacity>
 
         <Animated.View entering={FadeInUp.delay(200)} style={styles.content}>
@@ -402,7 +402,7 @@ const ReviewModal = ({ visible, rating, comment, setRating, setComment, submitti
         <View style={styles.starPicker}>
           {[1, 2, 3, 4, 5].map((n) => (
             <TouchableOpacity key={n} onPress={() => setRating(n)}>
-              <Icon name={n <= rating ? 'star' : 'star-outline'} size={32} color={n <= rating ? COLORS.yel : COLORS.t4} />
+              <Icon name="star" size={32} color={n <= rating ? COLORS.yel : COLORS.t4} />
             </TouchableOpacity>
           ))}
         </View>
@@ -438,11 +438,11 @@ const styles = StyleSheet.create({
   heroPlaceholderText: { fontFamily: FONTS.soraExtraBold, fontSize: 80, color: COLORS.p700 },
   topBadges: { position: 'absolute', bottom: 14, left: 14, flexDirection: 'row', gap: 6 },
   backButton: {
-    position: 'absolute', top: 52, left: 16, width: 40, height: 40, borderRadius: 20,
+    position: 'absolute', top: 52, left: 16, width: 40, height: 40, borderRadius: 14,
     backgroundColor: COLORS.white, justifyContent: 'center', alignItems: 'center', ...SHADOWS.card,
   },
   wishlistButton: {
-    position: 'absolute', top: 52, right: 16, width: 40, height: 40, borderRadius: 12,
+    position: 'absolute', top: 52, right: 16, width: 40, height: 40, borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.92)', justifyContent: 'center', alignItems: 'center', ...SHADOWS.card,
   },
   content: { padding: 18 },

@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
   plantInfo: {
     flex: 1,
     marginLeft: 12,
+    marginRight: 36,
     justifyContent: 'center',
   },
   plantName: {

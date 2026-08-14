@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Icon from './Icon';
 import { COLORS, FONTS, RADII } from '../../theme';
 
 const TONE_COLORS = {
@@ -14,12 +15,20 @@ const TONE_COLORS = {
 /**
  * Small pill badge — used for "AI Verified", "Organic", "Free Delivery", etc.
  * @param {string} tone green|orange|red|blue|gold|neutral
+ * @param {string|ReactElement} icon Feather icon name or a pre-built icon element
  */
-const Badge = ({ label, tone = 'green', icon: IconComp, style }) => {
+const Badge = ({ label, tone = 'green', icon, style }) => {
   const t = TONE_COLORS[tone] || TONE_COLORS.neutral;
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (typeof icon === 'string') {
+      return <Icon name={icon} size={11} color={t.text} />;
+    }
+    return icon;
+  };
   return (
     <View style={[styles.badge, { backgroundColor: t.bg }, style]}>
-      {IconComp}
+      {renderIcon()}
       <Text style={[styles.text, { color: t.text }]} numberOfLines={1}>{label}</Text>
     </View>
   );

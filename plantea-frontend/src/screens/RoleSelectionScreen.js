@@ -71,7 +71,7 @@ export default function RoleSelectionScreen({ navigation }) {
       id: 'seller',
       title: 'Seller',
       description: 'Sell your plants online',
-      icon: 'leaf',
+      icon: 'feather',
       bgColor: COLORS.p100,
       anim: card2Anim,
       opacity: card2Opacity,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import Icon from './Icon';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
 const BUTTON_VARIANTS = {
@@ -21,6 +22,8 @@ const SIZES = {
  * @param {string} variant primary|accent|outline|ghost|danger
  * @param {string} size sm|md|lg
  * @param {boolean} loading shows a spinner and disables taps
+ * @param {string|ReactElement} icon Feather icon name or a pre-built icon element
+ * @param {'left'|'right'} iconPosition
  */
 const Button = ({
   title,
@@ -31,10 +34,23 @@ const Button = ({
   disabled = false,
   style,
   icon,
+  iconPosition = 'left',
+  iconColor,
+  iconSize = 17,
   ...rest
 }) => {
   const v = BUTTON_VARIANTS[variant] || BUTTON_VARIANTS.primary;
   const s = SIZES[size] || SIZES.md;
+
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (typeof icon === 'string') {
+      return (
+        <Icon name={icon} size={iconSize} color={iconColor || v.text} />
+      );
+    }
+    return icon;
+  };
 
   return (
     <Pressable
@@ -61,10 +77,11 @@ const Button = ({
         <ActivityIndicator color={v.text} size="small" />
       ) : (
         <View style={styles.content}>
-          {icon}
+          {iconPosition === 'left' && renderIcon()}
           {title ? (
             <Text style={[styles.text, { color: v.text, fontSize: s.fs }]}>{title}</Text>
           ) : null}
+          {iconPosition === 'right' && renderIcon()}
         </View>
       )}
     </Pressable>

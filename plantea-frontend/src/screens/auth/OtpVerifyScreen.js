@@ -157,8 +157,8 @@ export default function OtpVerifyScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={24} color={COLORS.t1} />
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+        <Icon name="arrow-left" size={20} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -206,7 +206,8 @@ export default function OtpVerifyScreen({ navigation, route }) {
         <View style={styles.resendContainer}>
           <Text style={styles.resendText}>Didn't receive code? </Text>
           {canResend ? (
-            <TouchableOpacity onPress={handleResend}>
+            <TouchableOpacity style={styles.resendLinkBtn} onPress={handleResend}>
+              <Icon name="refresh-cw" size={13} color={COLORS.p700} />
               <Text style={styles.resendLink}>Resend Code</Text>
             </TouchableOpacity>
           ) : (
@@ -226,8 +227,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
@@ -286,7 +290,13 @@ const styles = StyleSheet.create({
   resendContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 20,
+  },
+  resendLinkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   resendText: {
     fontFamily: FONTS.nunito,

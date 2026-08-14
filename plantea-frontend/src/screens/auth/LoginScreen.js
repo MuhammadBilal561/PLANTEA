@@ -120,13 +120,13 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.t1} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.t1} />
         </TouchableOpacity>
 
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
-            <Icon name="leaf" size={36} color={COLORS.p700} />
+            <Icon name="feather" size={36} color={COLORS.p700} />
           </View>
         </View>
 
@@ -138,58 +138,60 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
-            <View style={[
-              styles.inputContainer,
-              emailFocused && styles.inputContainerFocused,
-              errors.email && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor={COLORS.t4}
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (errors.email) setErrors({ ...errors, email: null });
-                }}
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+              <View style={[
+                styles.inputContainer,
+                emailFocused && styles.inputContainerFocused,
+                errors.email && styles.inputContainerError,
+              ]}>
+                <Icon name="mail" size={18} color={errors.email ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="your@email.com"
+                  placeholderTextColor={COLORS.t4}
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) setErrors({ ...errors, email: null });
+                  }}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <View style={[
-              styles.inputContainer,
-              passwordFocused && styles.inputContainerFocused,
-              errors.password && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Enter your password"
-                placeholderTextColor={COLORS.t4}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (errors.password) setErrors({ ...errors, password: null });
-                }}
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeButton}
-              >
-                <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
-              </TouchableOpacity>
-            </View>
+              <View style={[
+                styles.inputContainer,
+                passwordFocused && styles.inputContainerFocused,
+                errors.password && styles.inputContainerError,
+              ]}>
+                <Icon name="lock" size={18} color={errors.password ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="Enter your password"
+                  placeholderTextColor={COLORS.t4}
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) setErrors({ ...errors, password: null });
+                  }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                >
+                  <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color={COLORS.t3} />
+                </TouchableOpacity>
+              </View>
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
@@ -257,8 +259,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
   },
@@ -307,6 +312,10 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  inputIcon: {
+    marginLeft: 14,
+    marginRight: 4,
   },
   inputContainerFocused: {
     borderColor: COLORS.p400,

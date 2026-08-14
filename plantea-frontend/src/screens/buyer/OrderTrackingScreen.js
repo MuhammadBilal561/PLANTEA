@@ -106,16 +106,25 @@ export default function OrderTrackingScreen({ navigation }) {
 
         <View style={styles.orderDetails}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Seller:</Text>
+            <View style={styles.detailLabelRow}>
+              <Icon name="user" size={13} color={COLORS.t3} />
+              <Text style={styles.detailLabel}>Seller:</Text>
+            </View>
             <Text style={styles.detailValue}>{item.seller_name || 'Unknown'}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount:</Text>
+            <View style={styles.detailLabelRow}>
+              <Icon name="credit-card" size={13} color={COLORS.t3} />
+              <Text style={styles.detailLabel}>Amount:</Text>
+            </View>
             <Text style={styles.detailValue}>Rs. {item.total_amount || item.price_at_order}</Text>
           </View>
           {item.rider_name && (
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Rider:</Text>
+              <View style={styles.detailLabelRow}>
+                <Icon name="truck" size={13} color={COLORS.t3} />
+                <Text style={styles.detailLabel}>Rider:</Text>
+              </View>
               <Text style={styles.detailValue}>{item.rider_name}</Text>
             </View>
           )}
@@ -162,17 +171,13 @@ export default function OrderTrackingScreen({ navigation }) {
   if (apiError) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ color: COLORS.t2, fontWeight: '800', marginBottom: 6 }}>Can’t load orders</Text>
-        <Text style={{ color: COLORS.t3, textAlign: 'center', marginBottom: 12 }}>{apiError}</Text>
-        <TouchableOpacity
-          style={{ backgroundColor: COLORS.p700, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12 }}
-          onPress={() => {
-            setLoading(true);
-            loadOrders();
-          }}
-        >
-          <Text style={{ color: COLORS.white, fontWeight: '800' }}>Retry</Text>
-        </TouchableOpacity>
+        <EmptyState
+          icon="wifi-off"
+          isError
+          title="Can't load orders"
+          message={apiError}
+          onRetry={() => { setLoading(true); loadOrders(); }}
+        />
       </View>
     );
   }
@@ -425,6 +430,12 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   detailLabel: {
     fontFamily: FONTS.nunito,

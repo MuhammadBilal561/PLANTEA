@@ -12,8 +12,9 @@ import { COLORS, FONTS, RADII } from '../../theme';
  * @param {function} onRetry
  * @param {string} actionLabel custom label for the CTA button
  * @param {function} onAction custom action handler (falls back to onRetry)
+ * @param {string} actionIcon Feather icon name for the CTA button
  */
-const EmptyState = ({ icon = 'leaf', title, message, isError = false, onRetry, actionLabel, onAction }) => {
+const EmptyState = ({ icon = 'feather', title, message, isError = false, onRetry, actionLabel, onAction, actionIcon = 'refresh-cw' }) => {
   const accent = isError ? COLORS.red : COLORS.p400;
   const handleAction = onAction || onRetry;
   return (
@@ -25,7 +26,7 @@ const EmptyState = ({ icon = 'leaf', title, message, isError = false, onRetry, a
       {message ? <Text style={styles.message}>{message}</Text> : null}
       {handleAction ? (
         <TouchableOpacity style={styles.retry} onPress={handleAction} activeOpacity={0.7}>
-          <Icon name="refresh-cw" size={15} color={COLORS.white} />
+          <Icon name={actionIcon} size={15} color={COLORS.white} />
           <Text style={styles.retryText}>{actionLabel || 'Retry'}</Text>
         </TouchableOpacity>
       ) : null}

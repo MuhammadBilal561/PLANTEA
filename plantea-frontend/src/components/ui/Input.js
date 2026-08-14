@@ -1,30 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Text } from 'react-native';
 import Icon from './Icon';
 import { COLORS, FONTS, RADII } from '../../theme';
 
 /**
- * Consistent text input with icon + label + error.
+ * Consistent text input with leading icon + label + error + optional trailing element.
+ * @param {string} icon Feather icon name shown on the left
+ * @param {ReactElement} trailing pre-built element (e.g. eye toggle button) shown on the right
  */
 const Input = ({
   label,
   icon,
+  trailing,
   error,
   style,
   containerStyle,
+  onFocus,
+  onBlur,
   ...rest
 }) => {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-      <View style={[styles.field, error && styles.fieldError]}>
-        {icon ? <Icon name={icon} size={18} color={COLORS.t3} style={styles.icon} /> : null}
+      <View style={[styles.field, focused && styles.fieldFocused, error && styles.fieldError]}>
+        {icon ? <Icon name={icon} size={18} color={error ? COLORS.red : COLORS.t3} style={styles.icon} /> : null}
         <TextInput
           style={styles.input}
           placeholderTextColor={COLORS.t4}
           accessibilityLabel={label}
+          onFocus={(e) => { setFocused(true); onFocus && onFocus(e); }}
+          onBlur={(e) => { setFocused(false); onBlur && onBlur(e); }}
           {...rest}
         />
+        {trailing}
       </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
@@ -48,6 +58,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: RADII.btn,
     paddingHorizontal: 14,
+  },
+  fieldFocused: {
+    borderColor: COLORS.p400,
+    backgroundColor: COLORS.p50,
   },
   fieldError: {
     borderColor: COLORS.red,

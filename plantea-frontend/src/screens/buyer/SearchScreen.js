@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import ApiService from '../../services/api';
 import { Icon, Chip, EmptyState } from '../../components/ui';
 import PlantCard from '../../components/PlantCard';
@@ -124,7 +124,10 @@ export default function SearchScreen({ navigation, route }) {
       </View>
 
       <View style={styles.filtersSection}>
-        <Text style={styles.filterLabel}>Category</Text>
+        <View style={styles.filterRow}>
+          <Icon name="grid" size={13} color={COLORS.p600} />
+          <Text style={styles.filterLabel}>Category</Text>
+        </View>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -137,7 +140,10 @@ export default function SearchScreen({ navigation, route }) {
         />
 
         <View style={styles.row}>
-          <Text style={styles.filterLabel}>Price</Text>
+          <View style={styles.filterRow}>
+            <Icon name="tag" size={13} color={COLORS.p600} />
+            <Text style={styles.filterLabel}>Price</Text>
+          </View>
           <Text style={styles.activeRange}>{activePriceRange.label}</Text>
         </View>
         <FlatList
@@ -151,7 +157,10 @@ export default function SearchScreen({ navigation, route }) {
           contentContainerStyle={styles.filtersList}
         />
 
-        <Text style={[styles.filterLabel, { marginTop: 12 }]}>Sort</Text>
+        <View style={[styles.filterRow, { marginTop: 12 }]}>
+          <Icon name="sliders" size={13} color={COLORS.p600} />
+          <Text style={styles.filterLabel}>Sort</Text>
+        </View>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -166,7 +175,7 @@ export default function SearchScreen({ navigation, route }) {
 
       {loading && plants.length === 0 ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicatorCompat />
+          <ActivityIndicator size="large" color={COLORS.p600} />
         </View>
       ) : (
         <FlatList
@@ -200,13 +209,9 @@ export default function SearchScreen({ navigation, route }) {
   );
 }
 
-const ActivityIndicatorCompat = () => (
-  <Text style={styles.loadingText}>Loading...</Text>
-);
-
 const FooterSpinner = () => (
   <View style={styles.footer}>
-    <Text style={styles.footerText}>Loading more...</Text>
+    <ActivityIndicator size="small" color={COLORS.p600} />
   </View>
 );
 
@@ -248,18 +253,16 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
+  filterRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },
   filterLabel: {
     fontFamily: FONTS.nunitoBold,
     fontSize: 12,
     color: COLORS.t2,
-    marginBottom: 8,
   },
   activeRange: { fontFamily: FONTS.nunitoBold, fontSize: 12, color: COLORS.p700, marginBottom: 8 },
   filtersList: { gap: 8, paddingRight: 12 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { fontFamily: FONTS.nunito, color: COLORS.t3 },
   plantsGrid: { padding: 16, paddingBottom: 40 },
   plantsRow: { justifyContent: 'space-between', gap: 12 },
   footer: { alignItems: 'center', paddingVertical: 16 },
-  footerText: { fontFamily: FONTS.nunito, fontSize: 12, color: COLORS.t3 },
 });

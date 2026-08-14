@@ -123,13 +123,14 @@ export default function RegisterScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.t1} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.t1} />
         </TouchableOpacity>
 
         <View style={styles.header}>
           <Text style={styles.title}>Create Account</Text>
           <View style={styles.roleChip}>
+            <Icon name={role === 'buyer' ? 'shopping-cart' : role === 'seller' ? 'feather' : 'truck'} size={12} color={COLORS.white} />
             <Text style={styles.roleChipText}>Registering as {role.charAt(0).toUpperCase() + role.slice(1)}</Text>
           </View>
         </View>
@@ -137,100 +138,104 @@ export default function RegisterScreen({ navigation, route }) {
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Full Name</Text>
-            <View style={[
-              styles.inputContainer,
-              focusedField === 'fullName' && styles.inputContainerFocused,
-              errors.fullName && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={styles.input}
-                placeholder="John Doe"
-                placeholderTextColor={COLORS.t4}
-                value={fullName}
-                onChangeText={(text) => {
-                  setFullName(text);
-                  if (errors.fullName) setErrors({ ...errors, fullName: null });
-                }}
-                onFocus={() => setFocusedField('fullName')}
-                onBlur={() => setFocusedField(null)}
-                autoCapitalize="words"
-              />
-            </View>
+              <View style={[
+                styles.inputContainer,
+                focusedField === 'fullName' && styles.inputContainerFocused,
+                errors.fullName && styles.inputContainerError,
+              ]}>
+                <Icon name="user" size={18} color={errors.fullName ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="John Doe"
+                  placeholderTextColor={COLORS.t4}
+                  value={fullName}
+                  onChangeText={(text) => {
+                    setFullName(text);
+                    if (errors.fullName) setErrors({ ...errors, fullName: null });
+                  }}
+                  onFocus={() => setFocusedField('fullName')}
+                  onBlur={() => setFocusedField(null)}
+                  autoCapitalize="words"
+                />
+              </View>
             {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Phone Number</Text>
-            <View style={[
-              styles.inputContainer,
-              focusedField === 'phone' && styles.inputContainerFocused,
-              errors.phone && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={styles.input}
-                placeholder="03001234567"
-                placeholderTextColor={COLORS.t4}
-                value={phone}
-                onChangeText={(text) => {
-                  setPhone(text);
-                  if (errors.phone) setErrors({ ...errors, phone: null });
-                }}
-                onFocus={() => setFocusedField('phone')}
-                onBlur={() => setFocusedField(null)}
-                keyboardType="phone-pad"
-                maxLength={11}
-              />
-            </View>
+              <View style={[
+                styles.inputContainer,
+                focusedField === 'phone' && styles.inputContainerFocused,
+                errors.phone && styles.inputContainerError,
+              ]}>
+                <Icon name="phone" size={18} color={errors.phone ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="03001234567"
+                  placeholderTextColor={COLORS.t4}
+                  value={phone}
+                  onChangeText={(text) => {
+                    setPhone(text);
+                    if (errors.phone) setErrors({ ...errors, phone: null });
+                  }}
+                  onFocus={() => setFocusedField('phone')}
+                  onBlur={() => setFocusedField(null)}
+                  keyboardType="phone-pad"
+                  maxLength={11}
+                />
+              </View>
             {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
-            <View style={[
-              styles.inputContainer,
-              focusedField === 'email' && styles.inputContainerFocused,
-              errors.email && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor={COLORS.t4}
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (errors.email) setErrors({ ...errors, email: null });
-                }}
-                onFocus={() => setFocusedField('email')}
-                onBlur={() => setFocusedField(null)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+              <View style={[
+                styles.inputContainer,
+                focusedField === 'email' && styles.inputContainerFocused,
+                errors.email && styles.inputContainerError,
+              ]}>
+                <Icon name="mail" size={18} color={errors.email ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="your@email.com"
+                  placeholderTextColor={COLORS.t4}
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) setErrors({ ...errors, email: null });
+                  }}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <View style={[
-              styles.inputContainer,
-              focusedField === 'password' && styles.inputContainerFocused,
-              errors.password && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Minimum 8 characters"
-                placeholderTextColor={COLORS.t4}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (errors.password) setErrors({ ...errors, password: null });
-                }}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField(null)}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
+              <View style={[
+                styles.inputContainer,
+                focusedField === 'password' && styles.inputContainerFocused,
+                errors.password && styles.inputContainerError,
+              ]}>
+                <Icon name="lock" size={18} color={errors.password ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="Minimum 8 characters"
+                  placeholderTextColor={COLORS.t4}
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) setErrors({ ...errors, password: null });
+                  }}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeButton}
@@ -251,25 +256,26 @@ export default function RegisterScreen({ navigation, route }) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Confirm Password</Text>
-            <View style={[
-              styles.inputContainer,
-              focusedField === 'confirmPassword' && styles.inputContainerFocused,
-              errors.confirmPassword && styles.inputContainerError,
-            ]}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Re-enter password"
-                placeholderTextColor={COLORS.t4}
-                value={confirmPassword}
-                onChangeText={(text) => {
-                  setConfirmPassword(text);
-                  if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
-                }}
-                onFocus={() => setFocusedField('confirmPassword')}
-                onBlur={() => setFocusedField(null)}
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-              />
+              <View style={[
+                styles.inputContainer,
+                focusedField === 'confirmPassword' && styles.inputContainerFocused,
+                errors.confirmPassword && styles.inputContainerError,
+              ]}>
+                <Icon name="lock" size={18} color={errors.confirmPassword ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="Re-enter password"
+                  placeholderTextColor={COLORS.t4}
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
+                  }}
+                  onFocus={() => setFocusedField('confirmPassword')}
+                  onBlur={() => setFocusedField(null)}
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                />
               <TouchableOpacity
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={styles.eyeButton}
@@ -347,8 +353,11 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
   },
@@ -367,6 +376,9 @@ const styles = StyleSheet.create({
     borderRadius: RADII.chip,
     alignSelf: 'flex-start',
     marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   roleChipText: {
     fontFamily: FONTS.nunitoBold,
@@ -392,6 +404,10 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  inputIcon: {
+    marginLeft: 14,
+    marginRight: 4,
   },
   inputContainerFocused: {
     borderColor: COLORS.p400,

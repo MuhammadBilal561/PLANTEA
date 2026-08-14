@@ -52,7 +52,7 @@ export default function OrderSuccessScreen({ navigation, route }) {
         style={styles.continueBtn}
         onPress={() => navigation.navigate('BuyerTabs')}
       >
-        <Icon name="leaf" size={16} color={COLORS.p700} />
+        <Icon name="feather" size={16} color={COLORS.p700} />
         <Text style={styles.continueBtnText}>Continue Shopping</Text>
       </TouchableOpacity>
     </View>

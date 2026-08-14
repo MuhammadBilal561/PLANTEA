@@ -129,12 +129,12 @@ export default function AddPlantListingScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.t1} />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={18} color={COLORS.t1} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Plant Listing</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="x" size={22} color={COLORS.t3} />
+        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+          <Icon name="x" size={18} color={COLORS.t3} />
         </TouchableOpacity>
       </View>
 
@@ -287,6 +287,7 @@ export default function AddPlantListingScreen({ navigation, route }) {
           style={styles.aiButton}
           onPress={() => navigation.navigate('AiScanner', { returnTo: 'AddPlantListing' })}
         >
+          <Icon name="search" size={16} color={COLORS.p700} />
           <Text style={styles.aiButtonText}>Use AI Scanner to identify plant</Text>
         </TouchableOpacity>
 
@@ -298,7 +299,10 @@ export default function AddPlantListingScreen({ navigation, route }) {
           {loading ? (
             <ActivityIndicator color={COLORS.white} />
           ) : (
-            <Text style={styles.submitButtonText}>List Plant</Text>
+            <>
+              <Icon name="plus" size={18} color={COLORS.white} />
+              <Text style={styles.submitButtonText}>List Plant</Text>
+            </>
           )}
         </TouchableOpacity>
 
@@ -321,6 +325,22 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.p100,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontFamily: FONTS.soraExtraBold,
@@ -422,11 +442,14 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   aiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     borderWidth: 2,
     borderColor: COLORS.p700,
     borderRadius: RADII.btn,
     paddingVertical: 14,
-    alignItems: 'center',
     marginTop: 8,
     marginBottom: 20,
   },
@@ -456,8 +479,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.p700,
     borderRadius: RADII.btn,
     height: 54,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
   },
   submitButtonDisabled: {
     backgroundColor: COLORS.t4,

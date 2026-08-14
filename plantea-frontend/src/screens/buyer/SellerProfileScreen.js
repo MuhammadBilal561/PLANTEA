@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ApiService from '../../services/api';
 import { Icon, Badge, Rating, EmptyState } from '../../components/ui';
@@ -45,7 +45,7 @@ export default function SellerProfileScreen({ navigation, route }) {
 
         <View style={styles.avatar}>
           {profile?.avatar_url ? (
-            <ImageCompat uri={profile.avatar_url} />
+            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} resizeMode="cover" />
           ) : (
             <Text style={styles.avatarText}>{initial}</Text>
           )}
@@ -116,12 +116,6 @@ export default function SellerProfileScreen({ navigation, route }) {
   );
 }
 
-const ImageCompat = ({ uri }) => (
-  <View style={styles.avatarImage}>
-    <Icon name="user" size={28} color={COLORS.p700} />
-  </View>
-);
-
 const StatBox = ({ label, value }) => (
   <View style={styles.statBox}>
     <Text style={styles.statValue}>{value}</Text>
@@ -158,9 +152,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center', justifyContent: 'center',
     alignSelf: 'center',
+    overflow: 'hidden',
   },
   avatarText: { fontFamily: FONTS.soraExtraBold, fontSize: 30, color: COLORS.p700 },
-  avatarImage: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
+  avatarImage: { width: 72, height: 72, borderRadius: 36 },
   sellerInfo: { alignItems: 'center', marginTop: 12 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sellerName: { fontFamily: FONTS.soraExtraBold, fontSize: 20, color: COLORS.white },

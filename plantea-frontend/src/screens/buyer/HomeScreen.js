@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput,
+  View, Text, StyleSheet, ScrollView,
   TouchableOpacity, Image, RefreshControl, Pressable,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn, Layout } from 'react-native-reanimated';
 import { useAuth } from '../../context/AuthContext';
 import ApiService from '../../services/api';
-import { Icon, Chip, SectionHeader, Rating } from '../../components/ui';
+import { Icon, Chip, SectionHeader, Rating, EmptyState } from '../../components/ui';
 import PlantCard from '../../components/PlantCard';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
@@ -104,17 +104,17 @@ export default function HomeScreen({ navigation }) {
         {/* Trust strip */}
         <View style={styles.trustRow}>
           <View style={styles.trustItem}>
-            <Icon name="shield" size={14} color="#8ECBA8" />
+            <Icon name="shield" size={14} color={COLORS.p300} />
             <Text style={styles.trustText}>AI-verified</Text>
           </View>
           <View style={styles.trustDivider} />
           <View style={styles.trustItem}>
-            <Icon name="truck" size={14} color="#8ECBA8" />
+            <Icon name="truck" size={14} color={COLORS.p300} />
             <Text style={styles.trustText}>Nationwide</Text>
           </View>
           <View style={styles.trustDivider} />
           <View style={styles.trustItem}>
-            <Icon name="credit-card" size={14} color="#8ECBA8" />
+            <Icon name="credit-card" size={14} color={COLORS.p300} />
             <Text style={styles.trustText}>0% commission</Text>
           </View>
         </View>
@@ -154,13 +154,20 @@ export default function HomeScreen({ navigation }) {
             ))}
           </View>
         ) : apiError ? (
-          <EmptyStateWithRetry message={apiError} onRetry={() => { setLoading(true); loadAll(); }} />
+          <EmptyState
+            icon="wifi-off"
+            isError
+            title="Something went wrong"
+            message={apiError}
+            onRetry={() => { setLoading(true); loadAll(); }}
+          />
         ) : (
           <View style={styles.sections}>
             {trending.length > 0 && (
               <Animated.View entering={FadeInUp.duration(400)} style={styles.section}>
                 <SectionHeader
                   title="Trending now"
+                  icon="trending-up"
                   onSeeAll={() => navigation.navigate('Search', { sort: 'popular' })}
                 />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hScroll}>
@@ -191,7 +198,7 @@ export default function HomeScreen({ navigation }) {
 
             {featured.length > 0 && (
               <Animated.View entering={FadeInDown.duration(400)} style={styles.section}>
-                <SectionHeader title="Featured picks" />
+                <SectionHeader title="Featured picks" icon="star" />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hScroll}>
                   {featured.map((plant, i) => (
                     <TouchableOpacity
@@ -223,7 +230,7 @@ export default function HomeScreen({ navigation }) {
                 onSeeAll={() => navigation.navigate('Search', { category: selectedCategory === 'All' ? undefined : selectedCategory })}
               />
               {plants.length === 0 ? (
-                <EmptyStateWithRetry message="No plants match your search yet." />
+                <EmptyState icon="search" title="No plants found" message="No plants match your search yet." />
               ) : (
                 <View style={styles.grid}>
                   {plants.map((plant, i) => (
@@ -244,19 +251,6 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
-
-const EmptyStateWithRetry = ({ message, onRetry }) => (
-  <View style={styles.empty}>
-    <Icon name="search" size={28} color={COLORS.p300} />
-    <Text style={styles.emptyTitle}>No plants found</Text>
-    <Text style={styles.emptyText}>{message}</Text>
-    {onRetry ? (
-      <TouchableOpacity style={styles.retryBtn} onPress={onRetry} activeOpacity={0.8}>
-        <Text style={styles.retryBtnText}>Retry</Text>
-      </TouchableOpacity>
-    ) : null}
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
@@ -322,13 +316,6 @@ const styles = StyleSheet.create({
   },
   skeletonImage: { width: '100%', height: 110, backgroundColor: COLORS.p100 },
   skeletonLine: { height: 12, backgroundColor: COLORS.p100, borderRadius: 6, marginHorizontal: 10, marginTop: 8 },
-  empty: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 24 },
-  emptyTitle: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.t1, marginTop: 10 },
-  emptyText: { fontFamily: FONTS.nunito, fontSize: 13, color: COLORS.t3, textAlign: 'center', marginTop: 5 },
-  retryBtn: {
-    marginTop: 14, backgroundColor: COLORS.p700, paddingVertical: 10, paddingHorizontal: 18, borderRadius: RADII.btn,
-  },
-  retryBtnText: { fontFamily: FONTS.nunitoBold, color: COLORS.white },
   scanFab: {
     position: 'absolute', bottom: 20, right: 20,
     width: 56, height: 56, borderRadius: 18,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, ActivityIndicator } from 'react-native';
 import ApiService from '../../services/api';
 import { Icon } from '../../components/ui';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
@@ -8,6 +8,12 @@ const METHOD_LABELS = {
   COD: 'Cash on Delivery',
   JazzCash: 'JazzCash',
   EasyPaisa: 'EasyPaisa',
+};
+
+const METHOD_ICONS = {
+  COD: 'dollar-sign',
+  JazzCash: 'credit-card',
+  EasyPaisa: 'smartphone',
 };
 
 export default function OrderSummaryScreen({ navigation, route }) {
@@ -134,8 +140,8 @@ export default function OrderSummaryScreen({ navigation, route }) {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} accessibilityLabel="Back">
-          <Icon name="arrow-left" size={22} color={COLORS.t1} />
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.t1} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Order Summary</Text>
       </View>
@@ -145,8 +151,8 @@ export default function OrderSummaryScreen({ navigation, route }) {
         <Text style={styles.sectionTitle}>Your Order</Text>
         {lineItems.map((item, index) => (
           <View key={index} style={[styles.orderItem, index > 0 && styles.orderItemSpacing]}>
-            <View style={styles.orderEmoji}>
-              <Icon name="leaf" size={22} color={COLORS.p700} />
+            <View style={styles.orderIconWrap}>
+              <Icon name="feather" size={22} color={COLORS.p700} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.orderName}>{item.plant.name}</Text>
@@ -192,7 +198,11 @@ export default function OrderSummaryScreen({ navigation, route }) {
                 onPress={applyCoupon}
                 disabled={applyingCoupon}
               >
-                <Text style={styles.couponBtnText}>{applyingCoupon ? '...' : 'Apply'}</Text>
+                {applyingCoupon ? (
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                ) : (
+                  <Text style={styles.couponBtnText}>Apply</Text>
+                )}
               </TouchableOpacity>
             </View>
             {couponError ? <Text style={styles.couponError}>{couponError}</Text> : null}
@@ -246,10 +256,13 @@ export default function OrderSummaryScreen({ navigation, route }) {
             onPress={() => setPayment(option.id)}
             activeOpacity={0.7}
           >
+            <View style={styles.paymentIcon}>
+              <Icon name={METHOD_ICONS[option.id] || 'credit-card'} size={16} color={COLORS.p700} />
+            </View>
+            <Text style={styles.paymentLabel}>{option.label}</Text>
             <View style={[styles.radio, payment === option.id && styles.radioActive]}>
               {payment === option.id && <View style={styles.radioDot} />}
             </View>
-            <Text style={styles.paymentLabel}>{option.label}</Text>
           </TouchableOpacity>
         ))}
 
@@ -274,9 +287,14 @@ export default function OrderSummaryScreen({ navigation, route }) {
         onPress={handlePlaceOrder}
         disabled={loading}
       >
-        <Text style={styles.placeOrderText}>
-          {loading ? 'Placing Order...' : `Place Order · Rs. ${total}`}
-        </Text>
+        {loading ? (
+          <ActivityIndicator color={COLORS.white} />
+        ) : (
+          <View style={styles.placeOrderContent}>
+            <Icon name="shopping-bag" size={18} color={COLORS.white} />
+            <Text style={styles.placeOrderText}>Place Order · Rs. {total}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -290,25 +308,56 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white, gap: 16,
     borderBottomWidth: 1, borderBottomColor: COLORS.p100,
   },
-  backText: { fontSize: 22, color: COLORS.t1 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headerTitle: { fontFamily: FONTS.soraExtraBold, fontSize: 20, color: COLORS.t1 },
   section: { backgroundColor: COLORS.white, margin: 12, borderRadius: 16, padding: 16, ...SHADOWS.card },
   sectionTitle: { fontFamily: FONTS.soraBold, fontSize: 14, color: COLORS.t1, marginBottom: 12 },
   orderItem: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   orderItemSpacing: { marginTop: 14 },
-  orderEmoji: { fontSize: 40, backgroundColor: COLORS.p100, borderRadius: 12, padding: 8 },
+  orderIconWrap: { backgroundColor: COLORS.p100, borderRadius: 12, padding: 10 },
   orderName: { fontFamily: FONTS.nunitoBold, fontSize: 15, color: COLORS.t1 },
   orderSeller: { fontFamily: FONTS.nunito, fontSize: 12, color: COLORS.t3, marginTop: 2 },
   orderPrice: { fontFamily: FONTS.soraBold, fontSize: 13, color: COLORS.p700, marginTop: 4 },
+  couponRow: { flexDirection: 'row', gap: 8 },
+  couponInput: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: FONTS.nunito,
+    fontSize: 14,
+    color: COLORS.t1,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  couponBtn: {
+    backgroundColor: COLORS.p700,
+    borderRadius: 12,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+  },
+  couponBtnText: { fontFamily: FONTS.nunitoBold, fontSize: 13, color: COLORS.white },
+  couponError: { fontFamily: FONTS.nunito, fontSize: 12, color: COLORS.red, marginTop: 6 },
+  couponApplied: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.p50, borderRadius: 12, padding: 12, gap: 8,
+  },
+  couponAppliedCode: { fontFamily: FONTS.soraBold, fontSize: 13, color: COLORS.p700 },
+  couponAppliedText: { fontFamily: FONTS.nunito, fontSize: 12, color: COLORS.t2, marginTop: 2 },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   priceLabel: { fontFamily: FONTS.nunito, color: COLORS.t2, fontSize: 14 },
   priceValue: { fontFamily: FONTS.nunitoBold, color: COLORS.t1, fontSize: 14 },
   totalRow: { borderTopWidth: 1, borderTopColor: COLORS.p100, paddingTop: 12, marginTop: 4 },
   totalLabel: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.t1 },
   totalValue: { fontFamily: FONTS.soraExtraBold, fontSize: 16, color: COLORS.p700 },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  changeText: { fontFamily: FONTS.nunitoBold, color: COLORS.p700, fontSize: 13 },
-  addressText: { fontFamily: FONTS.nunito, color: COLORS.t2, fontSize: 14, lineHeight: 22 },
   addressInput: {
     backgroundColor: COLORS.bg,
     borderRadius: 12,
@@ -322,10 +371,14 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   paymentOption: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  paymentIcon: {
+    width: 32, height: 32, borderRadius: 10,
+    backgroundColor: COLORS.p50, alignItems: 'center', justifyContent: 'center',
+  },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: COLORS.p400, justifyContent: 'center', alignItems: 'center' },
   radioActive: { borderColor: COLORS.p700 },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.p700 },
-  paymentLabel: { fontFamily: FONTS.nunitoBold, fontSize: 14, color: COLORS.t1 },
+  paymentLabel: { fontFamily: FONTS.nunitoBold, fontSize: 14, color: COLORS.t1, flex: 1 },
   jazzCashInputContainer: {
     marginTop: 8,
     paddingTop: 12,
@@ -351,5 +404,6 @@ const styles = StyleSheet.create({
   placeOrderBtnDisabled: {
     backgroundColor: COLORS.t4,
   },
+  placeOrderContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   placeOrderText: { fontFamily: FONTS.soraBold, color: COLORS.white, fontSize: 16 },
 });

@@ -78,7 +78,7 @@ export default function SplashScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoBadge}>
-          <Icon name="leaf" size={40} color={COLORS.p700} />
+          <Icon name="feather" size={40} color={COLORS.p700} />
         </View>
         <Text style={styles.appName}>Plantea</Text>
         <View style={styles.badgeContainer}>

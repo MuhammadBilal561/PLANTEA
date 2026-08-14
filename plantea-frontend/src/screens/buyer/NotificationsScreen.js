@@ -52,7 +52,7 @@ export default function NotificationsScreen({ navigation }) {
     const icons = {
       order_placed: 'package',
       order_confirmed: 'check-circle',
-      order_delivered: 'leaf',
+      order_delivered: 'award',
       review_received: 'star',
       order_rider_assigned: 'truck',
       order_cancelled: 'x-circle',
@@ -109,11 +109,12 @@ export default function NotificationsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.p700} />
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.t1} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity onPress={handleMarkAllRead}>
+        <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead} accessibilityLabel="Mark all as read">
+          <Icon name="check" size={14} color={COLORS.p700} />
           <Text style={styles.markAllText}>Mark all read</Text>
         </TouchableOpacity>
       </View>
@@ -161,6 +162,20 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.soraExtraBold,
     fontSize: 22,
     color: COLORS.t1,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
   },
   markAllText: {
     fontFamily: FONTS.nunitoBold,

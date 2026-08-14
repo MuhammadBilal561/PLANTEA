@@ -102,8 +102,8 @@ export default function ResetPasswordScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={24} color={COLORS.t1} />
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+        <Icon name="arrow-left" size={20} color={COLORS.t1} />
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -119,6 +119,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
             focusedField === 'password' && styles.inputContainerFocused,
             errors.password && styles.inputContainerError,
           ]}>
+            <Icon name="lock" size={18} color={errors.password ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { flex: 1 }]}
               placeholder="Minimum 8 characters"
@@ -158,6 +159,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
             focusedField === 'confirmPassword' && styles.inputContainerFocused,
             errors.confirmPassword && styles.inputContainerError,
           ]}>
+            <Icon name="lock" size={18} color={errors.confirmPassword ? COLORS.red : COLORS.t3} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { flex: 1 }]}
               placeholder="Re-enter password"
@@ -211,8 +213,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
@@ -248,6 +253,10 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  inputIcon: {
+    marginLeft: 14,
+    marginRight: 4,
   },
   inputContainerFocused: {
     borderColor: COLORS.p400,

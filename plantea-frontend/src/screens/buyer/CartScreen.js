@@ -50,8 +50,8 @@ export default function CartScreen({ navigation }) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-left" size={24} color={COLORS.p700} />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+            <Icon name="arrow-left" size={20} color={COLORS.t1} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Cart</Text>
         </View>
@@ -60,6 +60,7 @@ export default function CartScreen({ navigation }) {
           title="Your cart is empty"
           message="Plants you add will appear here ready for checkout."
           actionLabel="Browse plants"
+          actionIcon="feather"
           onAction={() => navigation.navigate('Home')}
         />
       </View>
@@ -69,8 +70,8 @@ export default function CartScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color={COLORS.p700} />
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Back">
+          <Icon name="arrow-left" size={20} color={COLORS.t1} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Cart</Text>
       </View>
@@ -92,15 +93,17 @@ export default function CartScreen({ navigation }) {
                 <TouchableOpacity
                   style={styles.qtyButton}
                   onPress={() => updateQuantity(item.plant.plant_id, Math.max(1, item.quantity - 1))}
+                  accessibilityLabel="Decrease quantity"
                 >
-                  <Text style={styles.qtyButtonText}>−</Text>
+                  <Icon name="minus" size={16} color={COLORS.p700} />
                 </TouchableOpacity>
                 <Text style={styles.qtyText}>{item.quantity}</Text>
                 <TouchableOpacity
                   style={styles.qtyButton}
                   onPress={() => updateQuantity(item.plant.plant_id, item.quantity + 1)}
+                  accessibilityLabel="Increase quantity"
                 >
-                  <Text style={styles.qtyButtonText}>+</Text>
+                  <Icon name="plus" size={16} color={COLORS.p700} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -133,7 +136,10 @@ export default function CartScreen({ navigation }) {
           style={styles.checkoutButton}
           onPress={() => navigation.navigate('Checkout', { cartItems })}
         >
-          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+          <View style={styles.checkoutContent}>
+            <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+            <Icon name="arrow-right" size={18} color={COLORS.white} />
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -157,6 +163,15 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.soraExtraBold,
     fontSize: 22,
     color: COLORS.t1,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: COLORS.p50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
   },
   content: {
     flex: 1,
@@ -216,11 +231,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  qtyButtonText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 16,
-    color: COLORS.p700,
-  },
   qtyText: {
     fontFamily: FONTS.soraBold,
     fontSize: 14,
@@ -277,6 +287,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  checkoutContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   checkoutButtonText: {
     fontFamily: FONTS.soraBold,

@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 import ApiService from '../../services/api';
+import { Icon } from '../../components/ui';
 import { COLORS, FONTS, RADII, SHADOWS } from '../../theme';
 
 const { width } = Dimensions.get('window');
@@ -155,6 +156,7 @@ export default function RiderDashboardScreen() {
           style={styles.acceptButton}
           onPress={() => handleAcceptOrder(item.order_id)}
         >
+          <Icon name="check" size={15} color={COLORS.white} />
           <Text style={styles.acceptButtonText}>Accept</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -181,6 +183,7 @@ export default function RiderDashboardScreen() {
             style={styles.actionButton}
             onPress={() => handleUpdateStatus(item.order_id, 'picked_up')}
           >
+            <Icon name="package" size={15} color={COLORS.white} />
             <Text style={styles.actionButtonText}>Mark Picked Up</Text>
           </TouchableOpacity>
         )}
@@ -190,6 +193,7 @@ export default function RiderDashboardScreen() {
             style={styles.actionButton}
             onPress={() => handleUpdateStatus(item.order_id, 'in_transit')}
           >
+            <Icon name="truck" size={15} color={COLORS.white} />
             <Text style={styles.actionButtonText}>Mark In Transit</Text>
           </TouchableOpacity>
         )}
@@ -199,6 +203,7 @@ export default function RiderDashboardScreen() {
             style={styles.actionButton}
             onPress={() => handleUpdateStatus(item.order_id, 'delivered')}
           >
+            <Icon name="check-circle" size={15} color={COLORS.white} />
             <Text style={styles.actionButtonText}>Mark Delivered</Text>
           </TouchableOpacity>
         )}
@@ -226,10 +231,16 @@ export default function RiderDashboardScreen() {
       <ScrollView style={styles.content}>
         <View style={styles.statsRow}>
           <Animated.View entering={ZoomIn.delay(100)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="trending-up" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.statValue}>Rs. {stats.today}</Text>
             <Text style={styles.statLabel}>Earnings Today</Text>
           </Animated.View>
           <Animated.View entering={ZoomIn.delay(200)} style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: '#FDEAD9' }]}>
+              <Icon name="calendar" size={16} color={COLORS.org} />
+            </View>
             <Text style={styles.statValue}>Rs. {stats.thisWeek}</Text>
             <Text style={styles.statLabel}>This Week</Text>
           </Animated.View>
@@ -288,6 +299,7 @@ export default function RiderDashboardScreen() {
             )
           ) : (
             <View style={styles.emptyContainer}>
+              <Icon name="map-pin" size={36} color={COLORS.t4} />
               <Text style={styles.emptyText}>No available deliveries</Text>
             </View>
           )}
@@ -304,6 +316,7 @@ export default function RiderDashboardScreen() {
             />
           ) : (
             <View style={styles.emptyContainer}>
+              <Icon name="truck" size={36} color={COLORS.t4} />
               <Text style={styles.emptyText}>No active deliveries</Text>
             </View>
           )}
@@ -358,6 +371,14 @@ const styles = StyleSheet.create({
     borderRadius: RADII.card,
     padding: 16,
     ...SHADOWS.card,
+  },
+  statIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   statValue: {
     fontFamily: FONTS.soraExtraBold,
@@ -419,7 +440,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.org,
     borderRadius: RADII.btn,
     paddingVertical: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     marginTop: 10,
   },
   acceptButtonText: {
@@ -431,7 +455,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.p700,
     borderRadius: RADII.btn,
     paddingVertical: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     marginTop: 10,
   },
   actionButtonText: {
@@ -442,6 +469,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 20,
     alignItems: 'center',
+    gap: 8,
   },
   emptyText: {
     fontFamily: FONTS.nunito,

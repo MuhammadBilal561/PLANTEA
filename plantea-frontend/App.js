@@ -8,7 +8,7 @@ import { Nunito_400Regular, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-go
 import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { COLORS } from './src/theme';
-import { Icon } from './src/components/ui';
+import { TabIcon } from './src/components/ui';
 import ErrorBoundary from './ErrorBoundary';
 
 import SplashScreen from './src/screens/SplashScreen';
@@ -82,14 +82,19 @@ const BuyerTabs = () => (
         backgroundColor: COLORS.white,
         borderTopColor: '#EAEFEB',
         borderTopWidth: 1,
-        height: 80,
-        paddingTop: 10,
-        paddingBottom: 10,
+        height: 76,
+        paddingTop: 8,
+        paddingBottom: 8,
+        shadowColor: '#0A2814',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 10,
       },
       tabBarLabelStyle: {
         fontSize: 10,
-        fontWeight: '700',
-        marginTop: 3,
+        fontFamily: 'Nunito_700Bold',
+        marginTop: 2,
       },
     }}
   >
@@ -98,7 +103,7 @@ const BuyerTabs = () => (
       component={HomeScreen}
       options={{
         tabBarLabel: 'Home',
-        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -106,7 +111,7 @@ const BuyerTabs = () => (
       component={SearchScreen}
       options={{
         tabBarLabel: 'Search',
-        tabBarIcon: ({ color }) => <Icon name="search" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="search" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -114,7 +119,7 @@ const BuyerTabs = () => (
       component={AiScannerScreen}
       options={{
         tabBarLabel: 'Scanner',
-        tabBarIcon: ({ color }) => <Icon name="camera" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="camera" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -122,7 +127,7 @@ const BuyerTabs = () => (
       component={OrderTrackingScreen}
       options={{
         tabBarLabel: 'Orders',
-        tabBarIcon: ({ color }) => <Icon name="package" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="package" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -130,7 +135,7 @@ const BuyerTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="user" color={color} focused={focused} />,
       }}
     />
   </Tab.Navigator>
@@ -146,14 +151,19 @@ const SellerTabs = () => (
         backgroundColor: COLORS.white,
         borderTopColor: '#EAEFEB',
         borderTopWidth: 1,
-        height: 80,
-        paddingTop: 10,
-        paddingBottom: 10,
+        height: 76,
+        paddingTop: 8,
+        paddingBottom: 8,
+        shadowColor: '#0A2814',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 10,
       },
       tabBarLabelStyle: {
         fontSize: 10,
-        fontWeight: '700',
-        marginTop: 3,
+        fontFamily: 'Nunito_700Bold',
+        marginTop: 2,
       },
     }}
   >
@@ -162,7 +172,7 @@ const SellerTabs = () => (
       component={SellerDashboardScreen}
       options={{
         tabBarLabel: 'Dashboard',
-        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -170,7 +180,7 @@ const SellerTabs = () => (
       component={AddPlantListingScreen}
       options={{
         tabBarLabel: 'Add Plant',
-        tabBarIcon: ({ color }) => <Icon name="plus-circle" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="plus-circle" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -178,7 +188,7 @@ const SellerTabs = () => (
       component={SellerEarningsScreen}
       options={{
         tabBarLabel: 'Earnings',
-        tabBarIcon: ({ color }) => <Icon name="trending-up" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="trending-up" color={color} focused={focused} />,
       }}
     />
     <Tab.Screen
@@ -186,7 +196,7 @@ const SellerTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="user" color={color} focused={focused} />,
       }}
     />
   </Tab.Navigator>
@@ -212,14 +222,19 @@ const RiderTabs = () => (
         backgroundColor: COLORS.white,
         borderTopColor: '#EAEFEB',
         borderTopWidth: 1,
-        height: 80,
-        paddingTop: 10,
-        paddingBottom: 10,
+        height: 76,
+        paddingTop: 8,
+        paddingBottom: 8,
+        shadowColor: '#0A2814',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 10,
       },
       tabBarLabelStyle: {
         fontSize: 10,
-        fontWeight: '700',
-        marginTop: 3,
+        fontFamily: 'Nunito_700Bold',
+        marginTop: 2,
       },
     }}
   >
@@ -228,7 +243,7 @@ const RiderTabs = () => (
       component={RiderDashboardScreen}
       options={{
         tabBarLabel: 'Dashboard',
-        tabBarIcon: ({ color }) => <Icon name="home" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} activeBg="#FDEAD9" />,
       }}
     />
     <Tab.Screen
@@ -236,7 +251,7 @@ const RiderTabs = () => (
       component={RiderEarningsScreen}
       options={{
         tabBarLabel: 'Earnings',
-        tabBarIcon: ({ color }) => <Icon name="trending-up" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="trending-up" color={color} focused={focused} activeBg="#FDEAD9" />,
       }}
     />
     <Tab.Screen
@@ -244,7 +259,7 @@ const RiderTabs = () => (
       component={ProfileScreen}
       options={{
         tabBarLabel: 'Profile',
-        tabBarIcon: ({ color }) => <Icon name="user" size={22} color={color} />,
+        tabBarIcon: ({ color, focused }) => <TabIcon name="user" color={color} focused={focused} activeBg="#FDEAD9" />,
       }}
     />
   </Tab.Navigator>
