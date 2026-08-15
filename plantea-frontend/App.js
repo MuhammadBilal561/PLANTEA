@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts, Sora_400Regular, Sora_700Bold, Sora_800ExtraBold } from '@expo-google-fonts/sora';
-import { Feather } from '@expo/vector-icons';
 import { Nunito_400Regular, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -297,14 +296,14 @@ const RootNavigator = () => {
 // Force rebuild - v2
 export default function App() {
   const [fontsLoaded] = useFonts({
-  Sora_400Regular,
-  Sora_700Bold,
-  Sora_800ExtraBold,
-  Nunito_400Regular,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-  ...Feather.font,
-});
+    Sora_400Regular,
+    Sora_700Bold,
+    Sora_800ExtraBold,
+    Nunito_400Regular,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+  });
+
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
